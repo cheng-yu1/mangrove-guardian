@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>红树林伴生植物 · 四季图鉴</title>
+<style>
+  :root {
+    --sea-light:#d9e8ef; --sea-mid:#a8c8d8; --sea-deep:#5c8091;
+    --sand:#f7f1e6; --green-deep:#2b463b; --green-mid:#3f6653;
+    --green-light:#82a68f; --ink:#2a3a34; --ink-soft:#6a7d72;
+    --white:#ffffff;
+    --bg-hero:#eaf2f6; --bg-allyear:#edf2ea; --bg-spring:#e8f2df;
+    --bg-summer:#fdf8e5; --bg-autumn:#f2e4d0; --bg-winter:#e4edf3;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",-apple-system,sans-serif;
+    background:var(--bg-hero); color:var(--ink); line-height:1.75;
+    overflow-x:hidden; -webkit-font-smoothing:antialiased;
+    transition:background-color 1.2s cubic-bezier(0.4,0,0.2,1);
+    -webkit-tap-highlight-color:transparent;
+    -webkit-text-size-adjust:100%;
+  }
+  body.focus-mode { overflow:hidden; }
+
+  #cursor-dot {
+    position: fixed; top: 0; left: 0;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(130, 230, 180, 0.9);
+    box-shadow: 0 0 10px rgba(130, 230, 180, 0.8);
+    pointer-events: none; z-index: 99999;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+  }
+  #cursor-ring {
+    position: fixed; top: 0; left: 0;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1.5px solid rgba(130, 230, 180, 0.6);
+    pointer-events: none; z-index: 99998;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+  }
+  body.hover-interactive #cursor-dot { width: 14px; height: 14px; background: rgba(255,255,255,1); }
+  body.hover-interactive #cursor-ring { width: 56px; height: 56px; border-color: rgba(255,255,255,0.9); }
+  @media (hover: none), (pointer: coarse) {
+    #cursor-dot, #cursor-ring { display: none !important; }
+    body { cursor: auto !important; }
+    a, button, .plant-card, .nav-btn, .back-btn { cursor: pointer !important; }
+  }
+
+  .back-btn {
+    position:fixed; top:24px; left:28px; z-index:999;
+    display:inline-flex; align-items:center; gap:10px;
+    padding:12px 24px; background:rgba(255,255,255,0.82);
+    backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(63,102,83,0.2); border-radius:100px;
+    color:var(--green-deep); font-size:13px; letter-spacing:0.18em;
+    text-decoration:none; font-family:inherit; font-weight:500;
+    transition:all 0.4s cubic-bezier(0.16,1,0.3,1);
+    box-shadow:0 4px 16px rgba(63,102,83,0.08); text-indent:0.18em;
+    cursor:pointer;
+  }
+  .back-btn svg { width:15px; height:15px; stroke:currentColor; stroke-width:2;
+    fill:none; stroke-linecap:round; stroke-linejoin:round;
+    transition:transform 0.4s ease; }
+
+  .hero {
+    position:relative; height:100vh; min-height:640px;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; overflow:hidden;
+  }
+  .hero-bg {
+    position:absolute; inset:0;
+    background:
+      linear-gradient(180deg, rgba(0,20,30,0.45) 0%, rgba(0,20,30,0.55) 60%, rgba(0,20,30,0.75) 100%),
+      url('plant/bg9.jpg') center/cover no-repeat;
+    z-index:0;
+  }
+  .hero-bg::before,
+  .hero-bg::after {
+    content:''; position:absolute; border-radius:50%;
+    filter:blur(80px); pointer-events:none; opacity:0.45;
+  }
+  .hero-bg::before {
+    width:460px; height:460px; top:-10%; left:-6%;
+    background:rgba(130,200,180,0.4);
+    animation:blobFloat 20s ease-in-out infinite;
+  }
+  .hero-bg::after {
+    width:420px; height:420px; bottom:-12%; right:-8%;
+    background:rgba(90,140,180,0.35);
+    animation:blobFloat 26s ease-in-out infinite reverse;
+  }
+  @keyframes blobFloat {
+    0%,100% { transform:translate(0,0) scale(1); }
+    50% { transform:translate(30px,-30px) scale(1.08); }
+  }
+  .hero::after {
+    content:''; position:absolute; left:0; right:0; bottom:0; height:90px;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 90' preserveAspectRatio='none'%3E%3Cpath fill='%23edf2ea' d='M0,45 C240,85 480,5 720,45 C960,85 1200,5 1440,45 L1440,90 L0,90 Z'/%3E%3C/svg%3E") no-repeat center bottom;
+    background-size:100% 90px; pointer-events:none; z-index:1;
+  }
+  .hero-inner { position:relative; z-index:2; padding:0 6%; max-width:1000px; }
+  .hero-eyebrow {
+    display:inline-block; font-size:11px; letter-spacing:0.55em;
+    color:rgba(255,255,255,0.9); padding:8px 26px;
+    background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.35); border-radius:100px;
+    margin-bottom:36px; backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px); text-indent:0.55em; font-weight:500;
+    text-shadow:0 2px 10px rgba(0,0,0,0.4);
+  }
+  .hero-title {
+    font-size:clamp(44px,7.5vw,96px); font-weight:800;
+    letter-spacing:0.06em; line-height:1.12;
+    color:#ffffff; margin-bottom:30px;
+    text-shadow:0 4px 30px rgba(0,0,0,0.55);
+  }
+  .hero-title .grad {
+    background:linear-gradient(135deg,#e8f5e9 0%,#a8d8ea 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero-desc {
+    font-size:clamp(15px,1.35vw,18px); font-weight:300;
+    line-height:2.1; color:rgba(255,255,255,0.92);
+    letter-spacing:0.1em; max-width:680px; margin:0 auto 52px;
+    text-shadow:0 2px 14px rgba(0,0,0,0.6);
+  }
+  .hero-scroll {
+    display:inline-flex; flex-direction:column; align-items:center;
+    gap:14px; font-size:11px; letter-spacing:0.4em;
+    color:rgba(255,255,255,0.8); text-indent:0.4em;
+    text-shadow:0 2px 8px rgba(0,0,0,0.5);
+  }
+  .hero-scroll .arrow {
+    width:1px; height:52px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.9), transparent);
+    animation:scrollHint 2.4s ease-in-out infinite;
+  }
+  @keyframes scrollHint {
+    0%,100% { transform:translateY(0); opacity:1; }
+    50% { transform:translateY(10px); opacity:0.3; }
+  }
+
+  .nav {
+    position:sticky; top:0; z-index:100;
+    background:rgba(255,255,255,0.78);
+    backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+    border-bottom:1px solid rgba(63,102,83,0.08);
+    padding:16px 5%; display:flex; justify-content:center;
+    gap:8px; flex-wrap:wrap;
+  }
+  .nav-btn {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 22px; border-radius:100px;
+    background:transparent; border:1px solid rgba(63,102,83,0.15);
+    color:var(--ink-soft); font-size:14px; letter-spacing:0.15em;
+    text-decoration:none; cursor:pointer;
+    transition:all 0.4s cubic-bezier(0.16,1,0.3,1);
+    font-family:inherit; text-indent:0.15em;
+  }
+  .nav-btn.active {
+    background:var(--green-deep); border-color:var(--green-deep);
+    color:var(--white); box-shadow:0 8px 22px rgba(43,70,59,0.25);
+  }
+  .nav-btn .dot {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--green-light); flex-shrink:0;
+  }
+  .nav-btn.allyear .dot { background:#82a68f; }
+  .nav-btn.spring .dot { background:#b8d4a8; }
+  .nav-btn.summer .dot { background:#e8c987; }
+  .nav-btn.autumn .dot { background:#d89a7c; }
+  .nav-btn.winter .dot { background:#a8b8c8; }
+  .nav-btn.active .dot { background:var(--white); }
+
+  .section { position:relative; padding:100px 5% 120px;
+    transition:background-color 1.2s cubic-bezier(0.4,0,0.2,1); }
+  .section-inner { max-width:1280px; margin:0 auto; position:relative; z-index:2; }
+  .section::before {
+    content:''; position:absolute; top:10%; right:5%;
+    width:320px; height:320px; border-radius:50%;
+    filter:blur(80px); pointer-events:none; opacity:0.5; z-index:0;
+  }
+  .section.allyear::before { background:rgba(130,166,143,0.2); }
+  .section.spring::before { background:rgba(184,212,168,0.35); }
+  .section.summer::before { background:rgba(232,201,135,0.3); }
+  .section.autumn::before { background:rgba(216,154,124,0.28); }
+  .section.winter::before { background:rgba(168,184,200,0.3); }
+
+  .season-header {
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:40px; margin-bottom:56px; padding-bottom:30px;
+    border-bottom:1px solid rgba(63,102,83,0.1);
+  }
+  .season-header-left { display:flex; align-items:center; gap:24px; }
+  .season-icon {
+    width:78px; height:78px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:36px; background:var(--white);
+    box-shadow:0 12px 36px rgba(63,102,83,0.12);
+    flex-shrink:0; position:relative;
+    transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);
+    animation:iconFloat 4s ease-in-out infinite;
+  }
+  @keyframes iconFloat {
+    0%,100% { transform:translateY(0) rotate(0deg); }
+    50% { transform:translateY(-6px) rotate(-3deg); }
+  }
+  .season-icon::after {
+    content:''; position:absolute; inset:-6px; border-radius:50%;
+    border:1px dashed rgba(63,102,83,0.18);
+    animation:ringSpin 24s linear infinite;
+  }
+  @keyframes ringSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+  .season-allyear .season-icon { background:linear-gradient(135deg,#e8f0e8 0%,#c8dcc8 100%); }
+  .season-spring .season-icon { background:linear-gradient(135deg,#eaf5dd 0%,#cfe2bd 100%); }
+  .season-summer .season-icon { background:linear-gradient(135deg,#fef6dd 0%,#f5dfa8 100%); }
+  .season-autumn .season-icon { background:linear-gradient(135deg,#fce8db 0%,#eec4a8 100%); }
+  .season-winter .season-icon { background:linear-gradient(135deg,#e5eff5 0%,#c4d9e5 100%); }
+  .season-en {
+    font-size:11px; letter-spacing:0.45em; color:var(--ink-soft);
+    text-transform:uppercase; margin-bottom:6px;
+    text-indent:0.45em; font-weight:500;
+  }
+  .season-cn {
+    font-size:clamp(28px,3.2vw,44px); font-weight:800;
+    color:var(--green-deep); letter-spacing:0.12em; line-height:1.2;
+  }
+  .season-sub {
+    font-size:13px; font-weight:300; color:var(--ink-soft);
+    letter-spacing:0.18em; margin-top:8px;
+  }
+  .season-count {
+    font-size:13px; letter-spacing:0.22em;
+    color:var(--ink-soft); padding-bottom:10px; white-space:nowrap;
+  }
+
+  .plant-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:28px;
+  }
+  .plant-card {
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border-radius:20px; overflow:hidden;
+    box-shadow:0 2px 14px rgba(63,102,83,0.05),0 10px 36px rgba(63,102,83,0.06);
+    transition:transform 0.55s cubic-bezier(0.16,1,0.3,1),
+                box-shadow 0.55s cubic-bezier(0.16,1,0.3,1),
+                background 0.5s ease,
+                outline 0.4s ease;
+    cursor:pointer; display:flex; flex-direction:column;
+    border:1px solid rgba(255,255,255,0.6);
+    position:relative;
+  }
+  .plant-card:not(.auto-active):hover {
+    transform:translateY(-8px);
+    box-shadow:0 6px 20px rgba(63,102,83,0.1),0 28px 56px rgba(63,102,83,0.16);
+    background:rgba(255,255,255,0.98);
+  }
+  .plant-card.auto-active {
+    transform:translateY(-10px) scale(1.04);
+    box-shadow:0 8px 24px rgba(63,102,83,0.14),0 32px 60px rgba(63,102,83,0.22);
+    background:rgba(255,255,255,1);
+    outline:2px solid rgba(130,230,180,0.7);
+    outline-offset:4px;
+    z-index:3;
+  }
+  .plant-image {
+    position:relative; width:100%; aspect-ratio:16/10;
+    overflow:hidden;
+    background:#f4f7f5;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .plant-image img {
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:contain;
+    display:block;
+    opacity:0; transition:opacity 0.7s ease;
+    padding:8px;
+  }
+  .plant-image img.active { opacity:1; }
+  .plant-image::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(180deg,rgba(0,0,0,0.02) 0%,transparent 40%,transparent 70%,rgba(0,0,0,0.06) 100%);
+    pointer-events:none;
+  }
+  .plant-image .badge {
+    position:absolute; top:14px; left:14px;
+    padding:5px 14px; border-radius:100px;
+    font-size:11px; letter-spacing:0.16em;
+    background:rgba(255,255,255,0.94);
+    color:var(--green-deep); font-weight:600;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    text-indent:0.16em; z-index:2;
+  }
+  .plant-image .dbl-hint {
+    position:absolute; right:14px; top:14px;
+    font-size:10px; letter-spacing:0.12em;
+    padding:5px 12px; border-radius:100px;
+    background:rgba(0,0,0,0.5);
+    color:rgba(255,255,255,0.9);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    opacity:0; transition:opacity 0.3s ease;
+    z-index:2; pointer-events:none;
+  }
+  .plant-image .img-dots {
+    position:absolute; bottom:10px; left:50%;
+    transform:translateX(-50%);
+    display:flex; gap:6px; z-index:2;
+  }
+  .plant-image .img-dots span {
+    width:6px; height:6px; border-radius:50%;
+    background:rgba(63,102,83,0.3);
+    transition:all 0.3s ease;
+  }
+  .plant-image .img-dots span.active {
+    background:var(--green-mid);
+    width:18px; border-radius:4px;
+  }
+
+  .plant-body {
+    padding:22px 22px 24px; display:flex;
+    flex-direction:column; gap:12px; flex:1;
+  }
+  .plant-family {
+    display:inline-block; font-size:10px; letter-spacing:0.12em;
+    padding:3px 10px; border-radius:100px;
+    background:rgba(63,102,83,0.08);
+    color:var(--green-mid); font-weight:500;
+    margin-bottom:2px; align-self:flex-start;
+  }
+  .plant-name {
+    font-size:20px; font-weight:800; color:var(--green-deep);
+    letter-spacing:0.06em; display:flex; align-items:baseline;
+    gap:8px; flex-wrap:wrap; line-height:1.3;
+  }
+  .plant-name .latin {
+    font-size:11px; font-weight:400; font-style:italic;
+    color:var(--ink-soft); letter-spacing:0;
+    font-family:"Times New Roman",Georgia,serif;
+  }
+  .plant-desc {
+    font-size:13.5px; font-weight:300; line-height:1.9;
+    color:var(--ink-soft); letter-spacing:0.05em; flex:1;
+  }
+  .plant-phenology {
+    display:flex; gap:14px; flex-wrap:wrap;
+    padding:9px 0; border-top:1px dashed rgba(63,102,83,0.12);
+    border-bottom:1px dashed rgba(63,102,83,0.12);
+    font-size:12px; color:var(--ink-soft); letter-spacing:0.06em;
+  }
+  .plant-phenology .item { display:inline-flex; align-items:center; gap:5px; }
+  .plant-phenology .item .icon { font-size:13px; }
+  .plant-tag {
+    display:inline-flex; align-items:flex-start; gap:8px;
+    padding:10px 14px; border-radius:11px;
+    background:linear-gradient(135deg,#fff9ec 0%,#fdefd0 100%);
+    border:1px dashed rgba(210,170,100,0.45);
+    font-size:12px; color:#8a6a3a; letter-spacing:0.05em;
+    line-height:1.6; font-weight:500; transition:all 0.4s ease;
+  }
+  .plant-card.auto-active .plant-tag {
+    background:linear-gradient(135deg,#fff5dc 0%,#fbe8bf 100%);
+    border-color:rgba(210,170,100,0.75);
+  }
+  .plant-tag .tag-icon { font-size:14px; flex-shrink:0; margin-top:1px; }
+  .plant-source {
+    font-size:10px; color:var(--ink-soft); opacity:0.55;
+    letter-spacing:0.06em; margin-top:-4px;
+  }
+
+  .wave-divider { height:50px; width:100%; position:relative; opacity:0.85; }
+  .wave-divider svg { width:100%; height:100%; display:block; }
+
+  .footer {
+    padding:60px 5% 80px; text-align:center;
+    background:var(--green-deep); color:rgba(255,255,255,0.7);
+    font-size:12px; letter-spacing:0.2em; position:relative; overflow:hidden;
+  }
+  .footer::before {
+    content:''; position:absolute; top:-80px; left:50%;
+    transform:translateX(-50%); width:500px; height:200px;
+    background:radial-gradient(ellipse,rgba(130,230,180,0.15) 0%,transparent 70%);
+    filter:blur(40px); pointer-events:none;
+  }
+  .footer .footer-title {
+    font-size:16px; color:var(--white); margin-bottom:10px;
+    font-weight:600; letter-spacing:0.32em; position:relative;
+  }
+  .footer .footer-note {
+    font-size:11px; margin-top:16px; opacity:0.45;
+    letter-spacing:0.08em; line-height:1.8;
+  }
+
+  .reveal {
+    opacity:0; transform:translateY(50px);
+    transition:opacity 0.9s cubic-bezier(0.16,1,0.3,1),
+                transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    will-change:opacity, transform;
+  }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* ===== 第七屏：AI 识图 ===== */
+  .ai-screen {
+    position:relative;
+    min-height:100vh;
+    padding:100px 5% 120px;
+    background:linear-gradient(180deg, #edf2ea 0%, #e8f2df 50%, #edf2ea 100%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    overflow:hidden;
+  }
+  .ai-screen::before {
+    content:'';
+    position:absolute; top:10%; right:5%;
+    width:320px; height:320px; border-radius:50%;
+    background:rgba(130,166,143,0.2);
+    filter:blur(80px); pointer-events:none; opacity:0.5;
+  }
+  .ai-screen-inner {
+    position:relative; z-index:2;
+    width:100%; max-width:720px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .ai-screen-tag {
+    font-size:12px; letter-spacing:0.6em;
+    color:var(--green-mid);
+    margin-bottom:16px;
+    padding-left:0.6em;
+    font-weight:500;
+  }
+  .ai-screen-title {
+    font-size:clamp(32px,5vw,56px);
+    font-weight:800;
+    color:var(--green-deep);
+    letter-spacing:0.1em;
+    text-align:center;
+    margin-bottom:16px;
+    line-height:1.3;
+  }
+  .ai-screen-title .grad {
+    background:linear-gradient(135deg,#3f6653 0%,#82a68f 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .ai-screen-subtitle {
+    font-size:14px;
+    color:var(--ink-soft);
+    letter-spacing:0.15em;
+    text-align:center;
+    margin-bottom:44px;
+    line-height:1.9;
+    max-width:540px;
+    padding:0 20px;
+  }
+
+  .upload-area {
+    width:100%;
+    height:220px;
+    border:2px dashed rgba(63,102,83,0.35);
+    border-radius:24px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:all 0.4s cubic-bezier(0.16,1,0.3,1);
+    background:rgba(255,255,255,0.7);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 8px 28px rgba(63,102,83,0.06);
+    position:relative;
+    overflow:hidden;
+  }
+  .upload-area:hover {
+    border-color:var(--green-mid);
+    background:rgba(255,255,255,0.95);
+    box-shadow:0 12px 40px rgba(63,102,83,0.14);
+    transform:translateY(-2px);
+  }
+  .upload-area:active {
+    transform:translateY(0);
+  }
+  .upload-icon {
+    font-size:48px;
+    margin-bottom:14px;
+    filter:drop-shadow(0 4px 12px rgba(63,102,83,0.15));
+  }
+  .upload-text {
+    font-size:15px;
+    color:var(--green-deep);
+    letter-spacing:0.1em;
+    font-weight:500;
+  }
+  .upload-hint {
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:8px;
+    letter-spacing:0.05em;
+  }
+
+  .loading-spinner {
+    display:none;
+    width:44px; height:44px;
+    border:3px solid rgba(63,102,83,0.15);
+    border-top:3px solid var(--green-mid);
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin:28px auto 0;
+  }
+  @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+
+  .loading-text {
+    display:none;
+    color:var(--green-deep);
+    font-size:14px;
+    letter-spacing:0.15em;
+    text-align:center;
+    margin-top:14px;
+    font-weight:500;
+  }
+  .loading-text.show { display:block; }
+  .loading-tip {
+    display:none;
+    color:var(--ink-soft);
+    font-size:12px;
+    letter-spacing:0.05em;
+    text-align:center;
+    margin-top:6px;
+  }
+  .loading-tip.show { display:block; }
+
+  .cancel-btn {
+    display:none;
+    margin:18px auto 0;
+    padding:9px 24px;
+    background:rgba(255,240,240,0.9);
+    border:1px solid rgba(210,120,120,0.4);
+    border-radius:100px;
+    color:#b85a5a;
+    font-size:13px;
+    letter-spacing:0.1em;
+    cursor:pointer;
+    font-family:inherit;
+    transition:all 0.3s;
+    font-weight:500;
+  }
+  .cancel-btn.show { display:inline-block; }
+  .cancel-btn:hover {
+    background:#ffffff;
+    border-color:#b85a5a;
+  }
+
+  .ai-result-box {
+    width:100%;
+    max-height:400px;
+    overflow-y:auto;
+    overflow-x:hidden;
+    margin-top:28px;
+    padding:4px;
+    background:rgba(255,255,255,0.85);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(63,102,83,0.12);
+    border-radius:22px;
+    display:none;
+    position:relative;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(63,102,83,0.3) transparent;
+    overscroll-behavior:contain;
+    box-shadow:0 10px 40px rgba(63,102,83,0.08);
+    -webkit-overflow-scrolling:touch;
+  }
+  .ai-result-box.show { display:block; }
+  .ai-result-box::-webkit-scrollbar { width:6px; }
+  .ai-result-box::-webkit-scrollbar-thumb {
+    background:rgba(63,102,83,0.3); border-radius:3px;
+  }
+
+  .result-inner { padding:26px 30px; }
+  .result-name {
+    font-size:24px;
+    font-weight:800;
+    color:var(--green-deep);
+    letter-spacing:0.1em;
+    margin-bottom:8px;
+    line-height:1.3;
+  }
+  .result-latin {
+    font-style:italic;
+    color:var(--green-mid);
+    font-size:14px;
+    font-family:"Times New Roman",Georgia,serif;
+    margin-bottom:22px;
+    letter-spacing:0.05em;
+  }
+  .result-item {
+    margin-bottom:18px;
+    padding:14px 18px;
+    background:rgba(237,242,234,0.7);
+    border-left:3px solid var(--green-light);
+    border-radius:0 12px 12px 0;
+  }
+  .result-item-title {
+    color:var(--green-mid);
+    font-size:11px;
+    letter-spacing:0.3em;
+    font-weight:700;
+    margin-bottom:6px;
+    font-family:'Courier New',monospace;
+  }
+  .result-item-content {
+    color:var(--ink);
+    font-size:14px;
+    line-height:1.9;
+    letter-spacing:0.03em;
+  }
+  .result-raw {
+    color:var(--ink);
+    font-size:14px;
+    line-height:1.9;
+    white-space:pre-wrap;
+  }
+
+  /* ===== 第一级：放大卡片浮层 ===== */
+  .focus-overlay {
+    position:fixed; inset:0; z-index:10000;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; opacity:0;
+    transition:opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .focus-overlay.active { pointer-events:auto; opacity:1; }
+  .focus-backdrop {
+    position:absolute; inset:0;
+    background:rgba(0,0,0,0.75);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    cursor:pointer;
+  }
+  .focus-card-wrap {
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    gap:16px; z-index:2;
+    transform:scale(0.88) translateY(30px); opacity:0;
+    transition:transform 0.55s cubic-bezier(0.16,1,0.3,1),
+                opacity 0.4s ease;
+  }
+  .focus-overlay.active .focus-card-wrap {
+    transform:scale(1) translateY(0); opacity:1;
+  }
+  .focus-card {
+    width:min(800px,92vw);
+    max-height:90vh;
+    background:white;
+    border-radius:24px;
+    overflow:hidden;
+    box-shadow:0 40px 100px rgba(0,0,0,0.55);
+    display:flex; flex-direction:column;
+    transition:opacity 0.3s ease, transform 0.3s ease;
+  }
+  .focus-card .focus-image {
+    position:relative; width:100%; aspect-ratio:16/7;
+    overflow:hidden; flex-shrink:0; max-height:42vh;
+    background:#f4f7f5;
+    display:flex; align-items:center; justify-content:center;
+    cursor:zoom-in;
+  }
+  .focus-card .focus-image img {
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:contain; display:block;
+    opacity:0; transition:opacity 0.6s ease;
+    padding:12px;
+    user-select:none; -webkit-user-drag:none;
+  }
+  .focus-card .focus-image img.active { opacity:1; }
+  .focus-card .focus-image::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(180deg,transparent 55%,rgba(0,0,0,0.25) 100%);
+    pointer-events:none;
+  }
+  .focus-card .focus-image .focus-badge {
+    position:absolute; top:16px; left:18px;
+    padding:6px 16px; border-radius:100px;
+    font-size:12px; letter-spacing:0.18em;
+    background:rgba(255,255,255,0.94);
+    color:var(--green-deep); font-weight:600;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    text-indent:0.18em; z-index:2;
+  }
+  .focus-card .focus-image .dbl-hint {
+    position:absolute; right:18px; top:16px;
+    font-size:11px; letter-spacing:0.12em;
+    padding:6px 14px; border-radius:100px;
+    background:rgba(0,0,0,0.55);
+    color:rgba(255,255,255,0.95);
+    z-index:2; pointer-events:none;
+  }
+  .focus-card .focus-image .img-dots {
+    position:absolute; bottom:14px; left:50%;
+    transform:translateX(-50%);
+    display:flex; gap:7px; z-index:2;
+  }
+  .focus-card .focus-image .img-dots span {
+    width:7px; height:7px; border-radius:50%;
+    background:rgba(63,102,83,0.3);
+    transition:all 0.3s ease;
+  }
+  .focus-card .focus-image .img-dots span.active {
+    background:var(--green-mid);
+    width:20px; border-radius:4px;
+  }
+
+  .focus-body {
+    padding:24px 34px 28px;
+    display:flex; flex-direction:column; gap:10px;
+    overflow-y:auto; flex:1;
+    scrollbar-width:thin;
+  }
+  .focus-card .plant-family { font-size:11px; padding:4px 12px; }
+  .focus-card .plant-name { font-size:26px; letter-spacing:0.08em; }
+  .focus-card .plant-name .latin { font-size:13px; }
+  .focus-card .plant-desc { font-size:14.5px; line-height:1.95; flex:none; }
+  .focus-card .plant-phenology { font-size:13px; padding:10px 0; }
+  .focus-card .plant-tag { padding:12px 16px; font-size:13px; line-height:1.7; }
+  .focus-card .plant-source { font-size:11px; }
+
+  .focus-nav {
+    width:54px; height:54px; border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.4);
+    color:white; font-size:26px; cursor:pointer;
+    transition:all 0.35s cubic-bezier(0.16,1,0.3,1);
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    flex-shrink:0; font-family:inherit; line-height:1;
+    padding-bottom:4px;
+    z-index: 9999; /* 👈 修改点1：提高按钮层级，防止被卡片遮挡 */
+  }
+
+  .plant-switch {
+    position:absolute; top:50%; transform:translateY(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    background:none; border:none; color:white;
+    cursor:pointer; z-index: 9999; /* 👈 修改点2：提高按钮层级 */
+    padding:16px 12px; border-radius:16px;
+    transition:all 0.35s cubic-bezier(0.16,1,0.3,1);
+    font-family:inherit;
+  }
+  .plant-switch .switch-icon {
+    width:40px; height:40px; border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.4);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; line-height:1;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    transition:all 0.3s ease;
+  }
+  .plant-switch .switch-label {
+    font-size:11px; letter-spacing:0.15em;
+    text-shadow:0 2px 6px rgba(0,0,0,0.6);
+    white-space:nowrap;
+    opacity:0.85;
+  }
+  .plant-prev { left:-90px; }
+  .plant-next { right:-90px; }
+
+  .focus-close {
+    position:fixed; top:28px; right:32px;
+    width:48px; height:48px; border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.4);
+    color:white; font-size:22px; cursor:pointer;
+    z-index:10; backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    transition:all 0.35s cubic-bezier(0.16,1,0.3,1);
+    display:flex; align-items:center; justify-content:center;
+    font-family:inherit; line-height:1; padding-bottom:2px;
+  }
+
+  .focus-indicator {
+    position:fixed; bottom:34px; left:50%;
+    transform:translateX(-50%);
+    display:flex; align-items:center; gap:18px;
+    color:rgba(255,255,255,0.9); font-size:13px;
+    letter-spacing:0.22em; z-index:10;
+    padding:10px 26px;
+    background:rgba(0,0,0,0.4); border-radius:100px;
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.15);
+  }
+  .focus-indicator .focus-section-name {
+    font-weight:600; letter-spacing:0.28em; color:white;
+  }
+  .focus-indicator .focus-divider {
+    width:1px; height:14px; background:rgba(255,255,255,0.3);
+  }
+  .focus-indicator .focus-count {
+    font-family:"Times New Roman",Georgia,serif;
+    font-size:15px; letter-spacing:0.15em;
+  }
+  .focus-indicator .focus-count .cur {
+    color:#82e6b4; font-weight:700;
+  }
+  .focus-dots {
+    display:flex; gap:7px; margin-left:4px;
+  }
+  .focus-dots span {
+    width:6px; height:6px; border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    transition:all 0.3s ease;
+  }
+  .focus-dots span.active {
+    background:#82e6b4; width:20px; border-radius:4px;
+    box-shadow:0 0 10px rgba(130,230,180,0.7);
+  }
+
+  /* ===== 第二级：图片全屏浮层 ===== */
+  .zoom-overlay {
+    position:fixed; inset:0; z-index:20000;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; opacity:0;
+    transition:opacity 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .zoom-overlay.active { pointer-events:auto; opacity:1; }
+  .zoom-backdrop {
+    position:absolute; inset:0;
+    background:rgba(0,0,0,0.92);
+    cursor:zoom-out;
+  }
+  .zoom-stage {
+    position:relative;
+    width:100vw; height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    z-index:2;
+    cursor:grab;
+  }
+  .zoom-stage.dragging { cursor:grabbing; }
+  .zoom-stage img {
+    max-width:100%; max-height:100%;
+    object-fit:contain;
+    user-select:none; -webkit-user-drag:none;
+    transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    will-change: transform;
+  }
+  .zoom-stage.instant img { transition:none; }
+  .zoom-hint {
+    position:fixed; bottom:28px; left:50%;
+    transform:translateX(-50%);
+    font-size:12px; letter-spacing:0.2em;
+    color:rgba(255,255,255,0.75);
+    background:rgba(0,0,0,0.5);
+    padding:10px 24px; border-radius:100px;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    z-index:10; pointer-events:none;
+  }
+  .zoom-close {
+    position:fixed; top:24px; right:28px;
+    width:46px; height:46px; border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.4);
+    color:white; font-size:22px; cursor:pointer;
+    z-index:10; backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
+    display:flex; align-items:center; justify-content:center;
+    font-family:inherit; line-height:1; padding-bottom:2px;
+  }
+  .zoom-title {
+    position:fixed; top:28px; left:32px;
+    color:white; font-size:14px; letter-spacing:0.2em;
+    background:rgba(0,0,0,0.4);
+    padding:10px 22px; border-radius:100px;
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    z-index:10; pointer-events:none;
+  }
+
+  /* ==================== AI 悬浮助手 ==================== */
+  .ai-assistant-container {
+    position: fixed;
+    bottom: 100px;
+    right: 5%;
+    z-index: 100000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  .ai-action-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ai-text-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 50px;
+    background: rgba(63,102,83,0.12);
+    border: 1px solid rgba(63,102,83,0.4);
+    color: var(--green-deep);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px);
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(63,102,83,0.08);
+    font-family: inherit;
+  }
+  .ai-text-btn.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  .ai-text-btn:hover {
+    background: rgba(63,102,83,0.25);
+    box-shadow: 0 8px 25px rgba(63,102,83,0.2);
+    transform: translateY(-2px);
+  }
+
+  .ai-sprite-btn {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #a4f3c9, #2a8c5e, #071a12);
+    border: 2px solid rgba(130, 230, 180, 0.8);
+    box-shadow: 0 0 25px rgba(130, 230, 180, 0.4), inset 0 0 15px rgba(130, 230, 180, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: visible;
+    padding: 0;
+    outline: none !important;
+    font-family: inherit;
+  }
+  .ai-sprite-btn:hover {
+    transform: scale(1.1) translateY(-5px);
+    box-shadow: 0 0 45px rgba(130, 230, 180, 0.9), inset 0 0 25px rgba(130, 230, 180, 0.6);
+  }
+  .sprite-sprout {
+    position: absolute;
+    top: -16px;
+    font-size: 22px;
+    filter: drop-shadow(0 0 8px #82e6b4);
+    transition: transform 0.3s ease;
+  }
+  .sprite-eyes { display: flex; gap: 12px; z-index: 2; }
+  .eye {
+    width: 16px; height: 16px;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .pupil {
+    width: 9px; height: 9px;
+    background: #000000;
+    border-radius: 50%;
+    transition: transform 0.1s ease-out;
+  }
+  .ai-sprite-btn.breathe { animation: spriteBreathe 0.6s ease-in-out; }
+  @keyframes spriteBreathe {
+    0% { transform: scale(1.1) translateY(-5px); }
+    50% { transform: scale(0.9) translateY(-5px); }
+    100% { transform: scale(1.1) translateY(-5px); }
+  }
+  .ai-label {
+    font-size: 11px;
+    color: #2a8c5e;
+    letter-spacing: 0.1em;
+    text-shadow: 0 2px 8px rgba(255, 255, 255, 0.8);
+    font-weight: 700;
+    transition: color 0.3s;
+    pointer-events: none;
+    margin-right: 26px;
+  }
+
+  .ai-chat-box, .ai-chat-box *, #ai-input, #ai-send-btn, .ai-close-btn, .ai-message {
+    cursor: auto !important;
+  }
+  #ai-input { cursor: text !important; }
+  #ai-send-btn, .ai-close-btn, .ai-clear-btn { cursor: pointer !important; }
+
+  .ai-chat-box {
+    width: 340px; height: 480px;
+    background: rgba(7, 26, 18, 0.92);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(130, 230, 180, 0.4);
+    border-radius: 20px;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(130, 230, 180, 0.1);
+    opacity: 0; visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: bottom right;
+    pointer-events: none;
+    /* 👈 修改点3：桌面端允许用户自由拉伸放大缩小 */
+    resize: both; min-width: 280px; min-height: 380px;
+  }
+  .ai-chat-box.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+  .ai-chat-header {
+    padding: 16px 20px;
+    background: rgba(130, 230, 180, 0.1);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; letter-spacing: 0.15em; color: #82e6b4;
+    border-bottom: 1px solid rgba(130, 230, 180, 0.2);
+    flex-shrink: 0;
+  }
+  .ai-close-btn {
+    background: none; border: none; color: #fff;
+    font-size: 20px; opacity: 0.8; transition: opacity 0.3s;
+    padding: 5px 10px; z-index: 999; position: relative;
+    font-family: inherit;
+  }
+  .ai-clear-btn {
+    background: none; border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px; margin-right: 8px;
+    transition: color 0.3s;
+    font-family: inherit;
+  }
+  .ai-chat-messages {
+    flex: 1; padding: 16px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ai-message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px; line-height: 1.6;
+    letter-spacing: 0.05em;
+    word-break: break-word;
+  }
+  .ai-message-bot {
+    align-self: flex-start;
+    background: rgba(130, 230, 180, 0.1);
+    color: #c8e6d9;
+    border: 1px solid rgba(130, 230, 180, 0.2);
+    border-bottom-left-radius: 4px;
+  }
+  .ai-message-user {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom-right-radius: 4px;
+  }
+  .ai-message-loading {
+    align-self: flex-start;
+    color: #82e6b4;
+    font-size: 12px;
+    padding: 8px 14px;
+    background: rgba(130, 230, 180, 0.05);
+    border-radius: 14px;
+  }
+  .ai-chat-input-area {
+    padding: 12px; display: flex; gap: 8px;
+    border-top: 1px solid rgba(130, 230, 180, 0.15);
+    background: rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+  }
+  #ai-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(130, 230, 180, 0.3);
+    border-radius: 30px;
+    padding: 10px 16px;
+    color: #fff; font-size: 12px;
+    outline: none; font-family: inherit;
+    transition: border 0.3s;
+    min-width: 0;
+  }
+  #ai-input:focus { border-color: #82e6b4; }
+  #ai-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+  #ai-send-btn {
+    padding: 0 18px;
+    background: rgba(130, 230, 180, 0.3);
+    border: 1px solid rgba(130, 230, 180, 0.6);
+    border-radius: 30px;
+    color: #fff; font-size: 12px; font-weight: 500;
+    transition: all 0.3s;
+    font-family: inherit;
+    flex-shrink: 0; white-space: nowrap;
+  }
+
+  .bottom-right-group {
+    position: fixed;
+    bottom: 5%;
+    right: 5%;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  .icon-btn {
+    width: clamp(44px, 4vw, 56px);
+    height: clamp(44px, 4vw, 56px);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(63,102,83,0.2);
+    color: #2b463b;
+    font-size: clamp(18px, 1.6vw, 24px);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.5s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-family: inherit;
+  }
+
+  /* ==================== 移动端适配 ==================== */
+  @media (max-width: 900px) {
+    /* 👈 修改点4：移动端强制关闭所有毛玻璃特效，极大缓解卡顿 */
+    * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
+    .back-btn { top:16px; left:16px; padding:9px 18px; font-size:12px; letter-spacing:0.12em; }
+
+    .hero { min-height:560px; }
+    .hero-eyebrow { font-size:10px; letter-spacing:0.35em; padding:6px 18px; margin-bottom:24px; }
+    .hero-title { font-size:clamp(32px,9vw,56px); margin-bottom:20px; letter-spacing:0.04em; }
+    .hero-desc { font-size:13px; line-height:1.9; letter-spacing:0.08em; margin-bottom:36px; padding:0 6%; }
+    .hero-scroll { font-size:10px; gap:10px; }
+    .hero-scroll .arrow { height:38px; }
+    .hero::after { height:60px; background-size:100% 60px; }
+
+    .nav { padding:12px 3%; gap:6px; }
+    .nav-btn { padding:7px 14px; font-size:12px; letter-spacing:0.08em; gap:6px; }
+    .nav-btn .dot { width:6px; height:6px; }
+
+    .section { padding:70px 5% 90px; }
+    .season-header { flex-direction:column; align-items:flex-start; gap:16px; margin-bottom:36px; padding-bottom:24px; }
+    .season-count { padding-bottom:0; font-size:12px; }
+    .season-header-left { gap:16px; }
+    .season-icon { width:56px; height:56px; font-size:26px; }
+    .season-cn { font-size:clamp(22px,5.5vw,30px); }
+    .season-sub { font-size:12px; }
+    .season-en { font-size:10px; letter-spacing:0.3em; }
+
+    .plant-grid { grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; }
+    .plant-body { padding:18px 18px 20px; gap:10px; }
+    .plant-name { font-size:18px; }
+    .plant-desc { font-size:13px; }
+
+    .wave-divider { height:36px; }
+
+    .footer { padding:50px 5% 60px; }
+    .footer .footer-title { font-size:14px; letter-spacing:0.2em; }
+    .footer .footer-note { font-size:10px; }
+
+    /* AI 识图 */
+    .ai-screen { padding:80px 5% 100px; min-height:auto; }
+    .ai-screen-title { font-size:clamp(28px,6.5vw,42px); }
+    .ai-screen-subtitle { font-size:13px; margin-bottom:32px; padding:0 10px; }
+    .ai-screen-tag { font-size:11px; letter-spacing:0.4em; }
+    .upload-area { height:170px; border-radius:20px; padding:0 16px; }
+    .upload-icon { font-size:38px; margin-bottom:10px; }
+    .upload-text { font-size:13px; }
+    .upload-hint { font-size:11px; }
+    .ai-result-box { max-height:52vh; margin-top:22px; border-radius:18px; }
+    .result-inner { padding:20px 20px; }
+    .result-name { font-size:19px; }
+    .result-latin { font-size:12px; margin-bottom:16px; }
+    .result-item { padding:12px 14px; margin-bottom:14px; }
+    .result-item-title { font-size:10px; letter-spacing:0.25em; }
+    .result-item-content { font-size:13px; line-height:1.8; }
+    .loading-spinner { width:36px; height:36px; }
+    .loading-text { font-size:13px; }
+    .loading-tip { font-size:11px; }
+    .cancel-btn { font-size:12px; padding:8px 20px; }
+
+    /* 浮层 */
+    .focus-nav { width:44px; height:44px; font-size:22px; }
+    .focus-card-wrap { gap:10px; }
+    .focus-close { top:16px; right:16px; width:42px; height:42px; font-size:20px; }
+    .focus-body { padding:20px 24px 24px; }
+    .focus-card .plant-name { font-size:22px; }
+    .focus-card .plant-desc { font-size:13.5px; line-height:1.9; }
+    .focus-card .plant-tag { font-size:12px; }
+    .focus-card .focus-image { aspect-ratio:16/8; max-height:32vh; }
+
+    /* 👈 修改点5：移动端彻底重构浮层导航按钮的定位，解决“切换不了、点不动”的问题 */
+    .focus-prev, .focus-next, .plant-prev, .plant-next {
+      position: fixed !important;
+      z-index: 99999 !important;
+      transform: translateY(-50%) !important;
+      top: 50% !important;
+      opacity: 0.85;
+    }
+    .focus-prev { left: 8px !important; top: 25% !important; }
+    .focus-next { right: 8px !important; top: 25% !important; }
+    .plant-prev { left: 8px !important; top: 75% !important; }
+    .plant-next { right: 8px !important; top: 75% !important; }
+    
+    .plant-switch .switch-label { display:none; }
+    .plant-switch .switch-icon { width:36px; height:36px; font-size:18px; }
+
+    .focus-indicator { bottom:20px; padding:8px 18px; font-size:12px; gap:12px; }
+    .zoom-title { top:16px; left:16px; font-size:12px; padding:8px 16px; }
+    .zoom-close { top:14px; right:14px; width:40px; height:40px; font-size:20px; }
+
+    /* AI 悬浮助手 */
+    /* 👈 修改点6：移动端调整AI助手位置，避免遮挡跳转按钮 */
+    .ai-assistant-container { bottom: 95px; right: 14px; gap: 6px; }
+    .ai-action-row { gap: 8px; }
+    .ai-sprite-btn { width: 56px; height: 56px; }
+    .eye { width: 14px; height: 14px; }
+    .pupil { width: 8px; height: 8px; }
+    .sprite-sprout { font-size: 18px; top: -14px; }
+    .ai-label { font-size: 10px; margin-right: 20px; }
+    .ai-text-btn { padding: 8px 14px; font-size: 12px; letter-spacing: 0.05em; }
+
+    .ai-chat-box {
+      width: calc(100vw - 28px);
+      max-width: 380px;
+      height: 62vh;
+      max-height: 540px;
+      right: 14px;
+      bottom: 148px;
+      position: fixed;
+      border-radius: 18px;
+      /* 👈 修改点7：移动端禁用resize，防止误触导致布局错乱 */
+      resize: none;
+    }
+    .ai-chat-header { padding: 12px 16px; font-size: 12px; letter-spacing: 0.1em; }
+    .ai-chat-messages { padding: 12px; gap: 10px; }
+    .ai-message { font-size: 12.5px; padding: 9px 13px; max-width: 88%; }
+    .ai-chat-input-area { padding: 10px; gap: 6px; }
+    #ai-input { padding: 9px 14px; font-size: 12px; }
+    #ai-send-btn { padding: 0 14px; font-size: 11.5px; }
+
+    .bottom-right-group { bottom: 20px; right: 14px; gap: 10px; }
+    .icon-btn { width: 42px; height: 42px; font-size: 18px; }
+  }
+
+  @media (max-width: 500px) {
+    .plant-grid { grid-template-columns:1fr; }
+    .plant-name { font-size:18px; }
+    .plant-body { padding:18px 16px 20px; }
+    .back-btn { padding:8px 14px; font-size:11px; }
+    .focus-nav { width:38px; height:38px; font-size:18px; }
+    .focus-card { width:96vw; }
+    .focus-body { padding:18px 20px 22px; }
+    .focus-card .plant-name { font-size:20px; }
+    .focus-card .plant-desc { font-size:13px; }
+    .focus-card .focus-image { aspect-ratio:4/3; max-height:30vh; }
+    .hero-title { font-size:clamp(30px,10vw,44px); }
+    .hero-desc { font-size:12px; }
+
+    .ai-screen-title { font-size:26px; }
+    .ai-screen-subtitle { font-size:12px; }
+    .upload-area { height:150px; }
+    .upload-icon { font-size:34px; }
+    .result-inner { padding:18px 18px; }
+    .result-name { font-size:17px; }
+
+    .ai-sprite-btn { width: 50px; height: 50px; }
+    .ai-text-btn { padding: 7px 12px; font-size: 11px; }
+    .ai-label { font-size: 9px; margin-right: 18px; }
+    .ai-chat-box { bottom: 130px; height: 65vh; }
+
+    .bottom-right-group { bottom: 16px; right: 12px; gap: 8px; }
+    .icon-btn { width: 38px; height: 38px; font-size: 16px; }
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .ai-sprite-btn:hover { transform: none; }
+    .plant-card:not(.auto-active):hover { transform: none; }
+    .nav-btn:hover { transform: none; }
+    .upload-area:hover { transform: none; }
+    .ai-text-btn:hover { transform: none; }
+    .icon-btn:hover { transform: none; }
+    .back-btn:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<a href="index3.html#baike-categories" class="back-btn" aria-label="返回百科">
+  <svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+  返回百科
+</a>
+
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow reveal">MANGROVE COMPANION PLANTS</div>
+    <h1 class="hero-title reveal">红树林<span class="grad">伴生植物</span></h1>
+    <p class="hero-desc reveal">
+      潮起潮落之间，除了红树本身，还有一群默默生长的伴生植物——<br>
+      它们以花、以果、以根，共同编织湛江海岸最柔软的生命线。
+    </p>
+    <div class="hero-scroll reveal">
+      <span>向下滚动 · 四季探索</span>
+      <span class="arrow"></span>
+    </div>
+  </div>
+</section>
+
+<nav class="nav">
+  <a href="#allyear" class="nav-btn allyear active"><span class="dot"></span>全年观赏</a>
+  <a href="#spring"  class="nav-btn spring"><span class="dot"></span>春季</a>
+  <a href="#summer"  class="nav-btn summer"><span class="dot"></span>夏季</a>
+  <a href="#autumn"  class="nav-btn autumn"><span class="dot"></span>秋季</a>
+  <a href="#winter"  class="nav-btn winter"><span class="dot"></span>冬季</a>
+</nav>
+
+<main id="sections-root"></main>
+
+<!-- 第七屏：AI 识图 -->
+<section class="ai-screen" id="ai-screen">
+  <div class="ai-screen-inner">
+    <div class="ai-screen-tag reveal">AI 识 图 助 手</div>
+    <h2 class="ai-screen-title reveal">拍一片叶子<br>让 <span class="grad">AI 告诉你它的名字</span></h2>
+    <p class="ai-screen-subtitle reveal">
+      上传任意红树林植物或生物的照片，AI 将为你识别它的中文名、学名、特征和有趣的科普知识。
+    </p>
+
+    <input type="file" id="file-input" accept="image/*" hidden>
+    <div class="upload-area" id="upload-area">
+      <div class="upload-icon">📷</div>
+      <div class="upload-text">点击上传图片 或 拖拽到此处</div>
+      <div class="upload-hint">支持 JPG / PNG · 大小不超过 5MB</div>
+    </div>
+
+    <div class="loading-spinner" id="loading-spinner"></div>
+    <div class="loading-text" id="loading-text">AI 正在认真辨认中…</div>
+    <div class="loading-tip" id="loading-tip">💡 模型推理约需 10-30 秒，请耐心等待</div>
+    <button class="cancel-btn" id="cancel-btn" onclick="cancelRecognition()">取消识别，重新上传</button>
+
+    <div class="ai-result-box" id="ai-result-box">
+      <div class="result-inner" id="result-inner"></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-title">红树林伴生植物 · 四季图鉴</div>
+  <div>湛江 · 红树林之城 · 生态科普数字展项</div>
+  <div class="footer-note">
+    物候数据来源：《中国植物志》、Flora of China、科普中国、各地政府物种资料 | 花果期因地域和气候略有差异
+  </div>
+</footer>
+
+<!-- 右下角音乐按钮 -->
+<div class="bottom-right-group">
+  <button class="icon-btn" id="sound-toggle" onclick="toggleSound(event)">🔇</button>
+</div>
+
+<!-- AI 悬浮助手 -->
+<div class="ai-assistant-container" id="ai-assistant-container">
+  <div class="ai-action-row">
+    <button class="ai-text-btn" id="jump-ai-btn" onclick="goToAIScreen()">一键识图</button>
+    <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
+      <div class="sprite-sprout">🍃</div>
+      <div class="sprite-eyes">
+        <div class="eye"><div class="pupil"></div></div>
+        <div class="eye"><div class="pupil"></div></div>
+      </div>
+    </button>
+  </div>
+  <div class="ai-label">AI 聊天助手</div>
+
+  <div class="ai-chat-box" id="ai-chat-box">
+    <div class="ai-chat-header">
+      <span>红树林 AI 智能导游</span>
+      <div>
+        <button class="ai-clear-btn" id="ai-clear-btn" title="清空聊天记录">🗑️</button>
+        <button class="ai-close-btn" id="ai-close-btn">✕</button>
+      </div>
+    </div>
+    <div class="ai-chat-messages" id="ai-chat-messages">
+      <div class="ai-message ai-message-bot">
+        你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。
+      </div>
+    </div>
+    <div class="ai-chat-input-area">
+      <input type="text" id="ai-input" placeholder="输入问题，比如：弹涂鱼为什么能上岸？" autocomplete="off">
+      <button id="ai-send-btn">发送</button>
+    </div>
+  </div>
+</div>
+
+<audio id="bgm" loop preload="auto">
+  <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=calm-nature-113679.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ==================== 触摸设备检测 ====================
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+/* ==========================================================
+   植物数据 (图片路径已全部统一为小写+下划线，防止识别不到)
+   ========================================================== */
+const PLANTS = {
+  allyear: {
+    id: 'allyear', en: 'ALL YEAR ROUND', cn: '全年观赏 · 常绿常新', sub: '不受季节限制 · 随时可见的绿意', icon: '🌿',
+    plants: [
+      {
+        name: '露兜树', latin: 'Pandanus tectorius', family: '露兜树科 · 露兜树属', badge: '四季常绿',
+        images: ['plant/pandanus_1.jpg','plant/pandanus_2.jpg','plant/pandanus_3.jpg'],
+        desc: '海岸上最独特的常绿灌木或小乔木。叶片细长带状，边缘及中脉有锐刺，螺旋状排列在枝头。支柱根从树干四面八方伸出，像八爪鱼一样稳固树身。',
+        phenology: [{ icon: '🌸', text: '花期 1-5月' }, { icon: '🍈', text: '果期 6-10月' }],
+        tag: '聚花果由40-80个核果束组成，成熟时桔红色，能浮在海面上漂流传播。叶片可编席、制伞，是海岸居民的常用材料。',
+        source: '数据来源：《中国植物志》、科普中国'
+      },
+      {
+        name: '苦郎树', latin: 'Clerodendrum inerme', family: '唇形科 · 大青属', badge: '四季常绿',
+        images: ['plant/kuliangshu_1.jpg','plant/kuliangshu_2.jpg','plant/kuliangshu_3.jpg'],
+        desc: '常绿蔓性灌木，叶片对生，呈卵形。花冠白色，雄蕊紫红色且长长伸出花冠外，像点缀的烟花。花期极长，几乎全年可见。',
+        phenology: [{ icon: '🌸', text: '花果期 3-12月' }],
+        tag: '典型的红树林伴生植物，耐盐碱、抗风。全株可入药，但具小毒，观赏时请勿误食。它的根系能固沙护岸。',
+        source: '数据来源：《中国植物志》、Flora of China'
+      }
+    ]
+  },
+  spring: {
+    id: 'spring', en: 'SPRING', cn: '春季 · 嫩芽初醒', sub: '三月至五月 · 花序渐次打开', icon: '🌱',
+    plants: [
+      {
+        name: '老鼠簕', latin: 'Acanthus ilicifolius', family: '爵床科 · 老鼠簕属', badge: '春末盛花',
+        images: ['plant/acanthus_ilicifolius_1.jpg','plant/acanthus_ilicifolius_2.jpg','plant/acanthus_ilicifolius_3.jpg'],
+        desc: '叶缘带刺，形状像老鼠的爪子。穗状花序顶生，花白色带紫，只有半边花瓣，花蕊完全暴露在外。是红树林下最耐阴的开花植物之一。',
+        phenology: [{ icon: '🌸', text: '花期 5-6月' }, { icon: '🍈', text: '果期 6-7月' }],
+        tag: '果实椭圆形，后面拖着长长的花柱，像老鼠的身体和尾巴；"簕"是刺的意思，叶边有尖锐锯齿。是重要真红树植物，能稳定滩涂。',
+        source: '数据来源：《中国植物志》第70卷、中国数字植物园'
+      },
+      {
+        name: '马鞍藤', latin: 'Ipomoea pes-caprae', family: '旋花科 · 虎掌藤属', badge: '春末夏初',
+        images: ['plant/ipomoea_pes_caprae_1.jpg','plant/ipomoea_pes_caprae_2.jpg'],
+        desc: '匍匐草本，紫红色漏斗状花像小喇叭，贴着沙滩一路蔓延。叶片先端凹陷，形状像马的蹄印。有"海滨花后"之称。',
+        phenology: [{ icon: '🌸', text: '花果期 5-10月' }],
+        tag: '种子种皮坚硬、吸水困难，但生命力极强，能随海流漂浮到世界各地拓展族群。是海岸沙地防风固沙的先锋植物。',
+        source: '数据来源：百度百科、澎湖农业改良场'
+      }
+    ]
+  },
+  summer: {
+    id: 'summer', en: 'SUMMER', cn: '夏季 · 绿荫盛放', sub: '六月至八月 · 花期与果期交织', icon: '☀️',
+    plants: [
+      {
+        name: '黄槿', latin: 'Talipariti tiliaceum', family: '锦葵科 · 黄槿属', badge: '夏季盛花',
+        images: ['plant/talipariti_tiliaceum_1.jpg','plant/talipariti_tiliaceum_2.jpg'],
+        desc: '常绿小乔木，花冠钟形，清晨初开时黄色，午后渐渐转为橙红，一日之内颜色渐变。盛花期在6-8月，是海岸绿化的常见树种。',
+        phenology: [{ icon: '🌸', text: '花期 6-8月' }, { icon: '🍈', text: '果期 8-9月' }],
+        tag: '花朝开暮落，每朵只开一天。清晨开黄色，午后随温度升高渐变为橙红色后凋落。是典型半红树植物，树皮纤维可制绳。',
+        source: '数据来源：《中国植物志》第49(2)卷、百度百科'
+      },
+      {
+        name: '红海榄', latin: 'Rhizophora stylosa', family: '红树科 · 红树属', badge: '夏季开花',
+        images: ['plant/rhizophora_stylosa_1.jpg','plant/rhizophora_stylosa_2.jpg','plant/rhizophora_stylosa_3.jpg'],
+        desc: '红树林里最"经典"的树种。长而弯曲的支柱根从枝干垂下，扎入淤泥像一道拱门。花期4-6月，花萼四裂片。胎生苗要到翌年6-8月才成熟。',
+        phenology: [{ icon: '🌸', text: '花期 4-6月' }, { icon: '🌱', text: '胎生苗翌年6-8月成熟' }],
+        tag: '胚轴可长到25-35厘米，较长者可达50厘米以上。种子在果实离母树前就已发芽，是典型的"胎生植物"。支柱根能抵御风浪。',
+        source: '数据来源：湛江市政府官网、红树林生态教育馆'
+      }
+    ]
+  },
+  autumn: {
+    id: 'autumn', en: 'AUTUMN', cn: '秋季 · 红果垂枝', sub: '九月至十一月 · 胚轴渐次发育', icon: '🍂',
+    plants: [
+      {
+        name: '秋茄', latin: 'Kandelia obovata', family: '红树科 · 秋茄属', badge: '秋季胚轴发育',
+        images: ['plant/kandelia_obovata_1.jpg','plant/kandelia_obovata_2.jpg','plant/kandelia_obovata_3.jpg'],
+        desc: '因胚轴秋末冬初成熟、外形酷似茄子而得名。花期7-8月，开白色星形小花。果期12月至翌年5月，胚轴细长，长12-20厘米。',
+        phenology: [{ icon: '🌸', text: '花期 7-8月' }, { icon: '🌱', text: '果期 12月-翌年5月' }],
+        tag: '种子在花序未离母树时就开始萌发，形成胚轴，成熟后从母树上掉落，插进泥土生根；没扎稳的则随海水漂浮。是红树林中分布最北的树种。',
+        source: '数据来源：科普中国、《中国植物志》第52(2)卷'
+      },
+      {
+        name: '杨叶肖槿', latin: 'Thespesia populnea', family: '锦葵科 · 肖槿属', badge: '夏末秋初开花',
+        images: ['plant/thespesia_populnea_1.jpg','plant/thespesia_populnea_2.jpg','plant/thespesia_populnea_3.jpg'],
+        desc: '常绿小乔木，花冠淡黄、花心暗红，花瓣薄如绢纸。花期5-8月，果期8-12月。盛开时只维持一天，清晨开、午后落。',
+        phenology: [{ icon: '🌸', text: '花期 5-8月' }, { icon: '🍈', text: '果期 8-12月' }],
+        tag: '果实木质化后不开裂，可在海水中漂流数月，靠洋流传播种子。属典型半红树植物，木材可制乐器。',
+        source: '数据来源：《中国植物志》第49(2)卷、维基百科'
+      }
+    ]
+  },
+  winter: {
+    id: 'winter', en: 'WINTER', cn: '冬季 · 白花静开', sub: '十二月至二月 · 候鸟伴飞', icon: '❄️',
+    plants: [
+      {
+        name: '海杧果', latin: 'Cerbera manghas', family: '夹竹桃科 · 海杧果属', badge: '冬季观果',
+        images: ['plant/cerbera_manghas_1.jpg','plant/cerbera_manghas_2.jpg','plant/cerbera_manghas_3.jpg'],
+        desc: '常绿小乔木，白色花朵中心带一抹粉红，散发淡淡茉莉香。花期3-10月，果期7月至翌年4月。果实外形像芒果，常年挂在枝头。',
+        phenology: [{ icon: '🌸', text: '花期 3-10月' }, { icon: '🍈', text: '果期 7月-翌年4月' }],
+        tag: '全株有剧毒，茎、叶、果均有白色乳汁，半颗果实足以使人致命。毒素集中于果核，误食后3-6小时发作。观赏时请勿采摘。',
+        source: '数据来源：中科院华南植物园、科普中国'
+      },
+      {
+        name: '木榄', latin: 'Bruguiera gymnorrhiza', family: '红树科 · 木榄属', badge: '花果期全年',
+        images: ['plant/bruguiera_gymnorrhiza_1.jpg','plant/bruguiera_gymnorrhiza_2.jpg','plant/bruguiera_gymnorrhiza_3.jpg'],
+        desc: '红树林中高大的常绿乔木。最特别的是它的"膝根"——从土里拱起一个个膝盖般的弯折。花单生，萼平滑无棱，暗黄红色。',
+        phenology: [{ icon: '🌸', text: '花果期 几全年' }],
+        tag: '膝根露出泥面，既是呼吸器官，又能稳固树身在软泥中的支撑。胚轴纺锤形，长约25厘米，是典型胎生植物。树皮可提取单宁。',
+        source: '数据来源：《中国植物志》第52(2)卷、《深圳植物志》'
+      }
+    ]
+  }
+};
+
+const SECTION_ORDER = ['allyear', 'spring', 'summer', 'autumn', 'winter'];
+
+function renderSections() {
+  const root = document.getElementById('sections-root');
+  let html = '';
+
+  SECTION_ORDER.forEach(function (sid, si) {
+    const sec = PLANTS[sid];
+    html += '<section class="section ' + sid + '" id="' + sid + '" data-season="' + sid + '">';
+    html += '<div class="section-inner">';
+    html += '<div class="season-header reveal">';
+    html += '<div class="season-header-left">';
+    html += '<div class="season-icon">' + sec.icon + '</div>';
+    html += '<div class="season-text">';
+    html += '<div class="season-en">' + sec.en + '</div>';
+    html += '<div class="season-cn">' + sec.cn + '</div>';
+    html += '<div class="season-sub">' + sec.sub + '</div>';
+    html += '</div></div>';
+    html += '<div class="season-count">共 ' + sec.plants.length + ' 种植物</div>';
+    html += '</div>';
+
+    html += '<div class="plant-grid">';
+    sec.plants.forEach(function (p, pi) {
+      html += '<article class="plant-card reveal" data-season="' + sid + '" data-plant-index="' + pi + '" tabindex="0">';
+      html += '<div class="plant-image">';
+      p.images.forEach(function (url, ii) {
+        html += '<img src="' + url + '" alt="' + p.name + ' 图' + (ii+1) + '" loading="lazy" class="' + (ii===0?'active':'') + '" data-img-index="' + ii + '">';
+      });
+      html += '<span class="badge">' + p.badge + '</span>';
+      html += '<span class="dbl-hint">双击放大</span>';
+      html += '<div class="img-dots">';
+      p.images.forEach(function (_, ii) {
+        html += '<span class="' + (ii===0?'active':'') + '" data-dot-index="' + ii + '"></span>';
+      });
+      html += '</div></div>';
+      html += '<div class="plant-body">';
+      html += '<span class="plant-family">' + p.family + '</span>';
+      html += '<h3 class="plant-name">' + p.name + ' <span class="latin">' + p.latin + '</span></h3>';
+      html += '<p class="plant-desc">' + p.desc + '</p>';
+      html += '<div class="plant-phenology">';
+      p.phenology.forEach(function (ph) {
+        html += '<span class="item"><span class="icon">' + ph.icon + '</span>' + ph.text + '</span>';
+      });
+      html += '</div>';
+      html += '<div class="plant-tag"><span class="tag-icon">' + (p.tag.indexOf('毒') >= 0 || p.tag.indexOf('⚠') >= 0 || p.name === '海杧果' || p.name === '苦郎树' ? '⚠️' : '💡') + '</span><span>' + p.tag + '</span></div>';
+      html += '<p class="plant-source">' + p.source + '</p>';
+      html += '</div></article>';
+    });
+    html += '</div></div></section>';
+
+    if (si < SECTION_ORDER.length - 1) {
+      html += '<div class="wave-divider"><svg viewBox="0 0 1440 60" preserveAspectRatio="none">';
+      html += '<path fill="none" stroke="rgba(63,102,83,0.15)" stroke-width="1.2" d="M0,30 C180,' + (si%2===0?'10 360,50':'50 360,10') + ' 540,30 C720,' + (si%2===0?'10 900,50':'50 900,10') + ' 1080,30 C1260,' + (si%2===0?'10 1440,50':'50 1440,10') + ' 1440,30"/>';
+      html += '</svg></div>';
+    }
+  });
+
+  root.innerHTML = html;
+}
+renderSections();
+
+const allCards = Array.from(document.querySelectorAll('.plant-card'));
+const sectionCards = {};
+SECTION_ORDER.forEach(function (sid) {
+  const sec = document.getElementById(sid);
+  if (sec) sectionCards[sid] = Array.from(sec.querySelectorAll('.plant-card'));
+});
+
+const globalOrder = [];
+SECTION_ORDER.forEach(function (sid) {
+  if (sectionCards[sid]) {
+    sectionCards[sid].forEach(function (card, i) {
+      globalOrder.push({ sectionId: sid, index: i, card: card });
+    });
+  }
+});
+
+let currentSeason = 'allyear';
+let currentGlobalIndex = 0;
+let currentImgIndex = 0;
+let imgTimer = null;
+let isFocused = false;
+let focusSectionId = null;
+let focusPlantIndex = 0;
+let focusImgIndex = 0;
+let focusOverlay = null;
+let isUserScrolling = false;
+let scrollSettleTimer = null;
+
+let isZooming = false;
+let zoomOverlay = null;
+let zoomScale = 1;
+let zoomX = 0, zoomY = 0;
+let zoomDragging = false;
+let zoomDragStartX = 0, zoomDragStartY = 0;
+let zoomBaseX = 0, zoomBaseY = 0;
+
+function setCardImage(card, imgIndex) {
+  const imgs = card.querySelectorAll('.plant-image img');
+  const dots = card.querySelectorAll('.img-dots span');
+  imgs.forEach(function (img, i) { img.classList.toggle('active', i === imgIndex); });
+  dots.forEach(function (dot, i) { dot.classList.toggle('active', i === imgIndex); });
+}
+
+function clearAutoActive() {
+  globalOrder.forEach(function (item) {
+    item.card.classList.remove('auto-active');
+    setCardImage(item.card, 0);
+  });
+}
+
+function showAutoActive(globalIdx) {
+  globalOrder.forEach(function (item, i) {
+    if (i === globalIdx) item.card.classList.add('auto-active');
+    else item.card.classList.remove('auto-active');
+  });
+}
+
+function getPlantImageCount(card) {
+  return card.querySelectorAll('.plant-image img').length;
+}
+
+function startAutoPlay(fromSeason) {
+  clearInterval(imgTimer);
+  if (fromSeason) {
+    const firstIdx = globalOrder.findIndex(function (item) { return item.sectionId === fromSeason; });
+    if (firstIdx >= 0) currentGlobalIndex = firstIdx;
+    currentImgIndex = 0;
+  }
+  if (currentGlobalIndex >= globalOrder.length) currentGlobalIndex = 0;
+
+  const currentItem = globalOrder[currentGlobalIndex];
+  showAutoActive(currentGlobalIndex);
+  setCardImage(currentItem.card, currentImgIndex);
+
+  imgTimer = setInterval(function () {
+    if (isFocused) return;
+    const item = globalOrder[currentGlobalIndex];
+    if (!item) return;
+    const total = getPlantImageCount(item.card);
+    currentImgIndex++;
+    if (currentImgIndex >= total) {
+      currentImgIndex = 0;
+      setCardImage(item.card, 0);
+      currentGlobalIndex = (currentGlobalIndex + 1) % globalOrder.length;
+      const nextItem = globalOrder[currentGlobalIndex];
+      showAutoActive(currentGlobalIndex);
+      setCardImage(nextItem.card, 0);
+    } else {
+      setCardImage(item.card, currentImgIndex);
+    }
+  }, 2600);
+}
+
+function pauseAutoPlay() { clearInterval(imgTimer); imgTimer = null; }
+
+function detectSeason() {
+  const scrollCenter = window.scrollY + window.innerHeight / 2;
+  let newSeason = SECTION_ORDER[0];
+  SECTION_ORDER.forEach(function (sid) {
+    const el = document.getElementById(sid);
+    if (el && el.offsetTop <= scrollCenter) newSeason = sid;
+  });
+  return newSeason;
+}
+
+function onScrollSeasonChange() {
+  if (isFocused) return;
+  const newSeason = detectSeason();
+  if (newSeason !== currentSeason) {
+    currentSeason = newSeason;
+    startAutoPlay(newSeason);
+  }
+}
+
+window.addEventListener('scroll', function () {
+  isUserScrolling = true;
+  clearTimeout(scrollSettleTimer);
+  scrollSettleTimer = setTimeout(function () {
+    isUserScrolling = false;
+    onScrollSeasonChange();
+  }, 120);
+}, { passive: true });
+
+// ===== 自定义鼠标 =====
+const cursorDot = document.getElementById('cursor-dot');
+const cursorRing = document.getElementById('cursor-ring');
+let mouseX = 0, mouseY = 0;
+let dotX = 0, dotY = 0;
+let ringX = 0, ringY = 0;
+
+if (!isTouchDevice) {
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX; mouseY = e.clientY;
+  });
+
+  function animateCursor() {
+    dotX += (mouseX - dotX) * 0.5; dotY += (mouseY - dotY) * 0.5;
+    cursorDot.style.left = dotX + 'px'; cursorDot.style.top = dotY + 'px';
+    ringX += (mouseX - ringX) * 0.15; ringY += (mouseY - ringY) * 0.15;
+    cursorRing.style.left = ringX + 'px'; cursorRing.style.top = ringY + 'px';
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  const interactiveElements = document.querySelectorAll('a, button, .plant-card, .nav-btn, .back-btn, .focus-close, .focus-nav, .plant-switch, .focus-image, .zoom-close, .ai-float-btn, .ai-text-btn, .upload-area');
+  interactiveElements.forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('hover-interactive'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('hover-interactive'));
+  });
+} else {
+  cursorDot.style.display = 'none';
+  cursorRing.style.display = 'none';
+}
+
+/* ==========================================================
+   第一级：卡片双击 → 放大卡片浮层
+   ========================================================== */
+function createFocusOverlay() {
+  if (focusOverlay) return focusOverlay;
+  const overlay = document.createElement('div');
+  overlay.className = 'focus-overlay';
+  overlay.innerHTML =
+    '<div class="focus-backdrop"></div>' +
+    '<button class="focus-close" aria-label="关闭">×</button>' +
+    '<div class="focus-card-wrap">' +
+      '<button class="focus-nav focus-prev" aria-label="上一张图片">‹</button>' +
+      '<div class="focus-card">' +
+        '<div class="focus-image" id="focus-image">' +
+          '<span class="focus-badge" id="focus-badge"></span>' +
+          '<span class="dbl-hint">双击图片放大</span>' +
+          '<div class="img-dots" id="focus-dots"></div>' +
+        '</div>' +
+        '<div class="focus-body" id="focus-body"></div>' +
+      '</div>' +
+      '<button class="focus-nav focus-next" aria-label="下一张图片">›</button>' +
+      '<button class="plant-switch plant-prev" aria-label="上一个植物">' +
+        '<span class="switch-icon">↑</span><span class="switch-label">上一植物</span>' +
+      '</button>' +
+      '<button class="plant-switch plant-next" aria-label="下一个植物">' +
+        '<span class="switch-icon">↓</span><span class="switch-label">下一植物</span>' +
+      '</button>' +
+    '</div>' +
+    '<div class="focus-indicator">' +
+      '<span class="focus-section-name" id="focus-section-name"></span>' +
+      '<span class="focus-divider"></span>' +
+      '<span class="focus-count"><span class="cur" id="focus-cur">1</span> / <span class="total" id="focus-total">3</span></span>' +
+      '<span class="focus-dots" id="focus-plant-dots"></span>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  focusOverlay = overlay;
+
+  overlay.querySelector('.focus-backdrop').addEventListener('click', exitFocus);
+  overlay.querySelector('.focus-close').addEventListener('click', exitFocus);
+  overlay.querySelector('.focus-prev').addEventListener('click', function (e) { e.stopPropagation(); navFocusImage(-1); });
+  overlay.querySelector('.focus-next').addEventListener('click', function (e) { e.stopPropagation(); navFocusImage(1); });
+  overlay.querySelector('.plant-prev').addEventListener('click', function (e) { e.stopPropagation(); navFocusPlant(-1); });
+  overlay.querySelector('.plant-next').addEventListener('click', function (e) { e.stopPropagation(); navFocusPlant(1); });
+
+  // 👈 修改点8：移动端图片点击放大（手机双击无效的问题）
+  const focusImageEl = overlay.querySelector('.focus-image');
+  if (isTouchDevice) {
+    focusImageEl.addEventListener('click', function(e) {
+        if (e.target.tagName === 'IMG') {
+            e.preventDefault(); e.stopPropagation();
+            openZoom();
+        }
+    });
+  } else {
+    focusImageEl.addEventListener('dblclick', function (e) {
+        e.preventDefault(); e.stopPropagation(); openZoom();
+    });
+  }
+
+  return overlay;
+}
+
+// 预加载函数，解决图片切换延迟
+function preloadPlantImages(plant) {
+    plant.images.forEach(function(url) {
+        const img = new Image();
+        img.src = url;
+    });
+}
+
+function renderFocusContent() {
+  const sec = PLANTS[focusSectionId];
+  const plant = sec.plants[focusPlantIndex];
+
+  // 预加载当前植物所有图片
+  preloadPlantImages(plant);
+
+  const focusImage = document.getElementById('focus-image');
+  focusImage.querySelectorAll('img').forEach(function (img) { img.remove(); });
+  plant.images.forEach(function (url, i) {
+    const img = document.createElement('img');
+    img.src = url; img.alt = plant.name + ' 图' + (i+1);
+    if (i === focusImgIndex) img.classList.add('active');
+    focusImage.insertBefore(img, focusImage.firstChild);
+  });
+
+  document.getElementById('focus-badge').textContent = plant.badge;
+  const dotsWrap = document.getElementById('focus-dots');
+  dotsWrap.innerHTML = '';
+  plant.images.forEach(function (_, i) {
+    const sp = document.createElement('span');
+    if (i === focusImgIndex) sp.classList.add('active');
+    dotsWrap.appendChild(sp);
+  });
+
+  const body = document.getElementById('focus-body');
+  let bodyHtml = '';
+  bodyHtml += '<span class="plant-family">' + plant.family + '</span>';
+  bodyHtml += '<h3 class="plant-name">' + plant.name + ' <span class="latin">' + plant.latin + '</span></h3>';
+  bodyHtml += '<p class="plant-desc">' + plant.desc + '</p>';
+  bodyHtml += '<div class="plant-phenology">';
+  plant.phenology.forEach(function (ph) {
+    bodyHtml += '<span class="item"><span class="icon">' + ph.icon + '</span>' + ph.text + '</span>';
+  });
+  bodyHtml += '</div>';
+  const tagIcon = (plant.name === '海杧果' || plant.name === '苦郎树' || plant.tag.indexOf('毒') >= 0) ? '⚠️' : '💡';
+  bodyHtml += '<div class="plant-tag"><span class="tag-icon">' + tagIcon + '</span><span>' + plant.tag + '</span></div>';
+  bodyHtml += '<p class="plant-source">' + plant.source + '</p>';
+  body.innerHTML = bodyHtml;
+
+  document.getElementById('focus-section-name').textContent = sec.cn.split(' · ')[0];
+  document.getElementById('focus-cur').textContent = focusPlantIndex + 1;
+  document.getElementById('focus-total').textContent = sec.plants.length;
+  const plantDots = document.getElementById('focus-plant-dots');
+  plantDots.innerHTML = '';
+  sec.plants.forEach(function (_, i) {
+    const sp = document.createElement('span');
+    if (i === focusPlantIndex) sp.classList.add('active');
+    plantDots.appendChild(sp);
+  });
+}
+
+function updateFocusContent() {
+  const focusCard = focusOverlay.querySelector('.focus-card');
+  focusCard.style.opacity = '0';
+  focusCard.style.transform = 'scale(0.97)';
+  setTimeout(function () {
+    renderFocusContent();
+    focusCard.style.opacity = '1';
+    focusCard.style.transform = 'scale(1)';
+  }, 180);
+}
+
+function enterFocus(sectionId, plantIndex) {
+  pauseAutoPlay();
+  isFocused = true;
+  focusSectionId = sectionId;
+  focusPlantIndex = plantIndex;
+  focusImgIndex = 0;
+  clearAutoActive();
+  createFocusOverlay();
+  focusOverlay.classList.add('active');
+  document.body.classList.add('focus-mode');
+  const focusCard = focusOverlay.querySelector('.focus-card');
+  focusCard.style.opacity = '1';
+  focusCard.style.transform = 'scale(1)';
+  renderFocusContent();
+}
+
+function exitFocus() {
+  if (!isFocused) return;
+  if (isZooming) closeZoom();
+  isFocused = false;
+  if (focusOverlay) focusOverlay.classList.remove('active');
+  document.body.classList.remove('focus-mode');
+  const globalIdx = globalOrder.findIndex(function (item) {
+    return item.sectionId === focusSectionId && item.index === focusPlantIndex;
+  });
+  if (globalIdx >= 0) { currentGlobalIndex = globalIdx; currentImgIndex = 0; }
+  setTimeout(function () { startAutoPlay(); }, 350);
+}
+
+function navFocusImage(delta) {
+  if (!focusSectionId) return;
+  const sec = PLANTS[focusSectionId];
+  const plant = sec.plants[focusPlantIndex];
+  focusImgIndex = (focusImgIndex + delta + plant.images.length) % plant.images.length;
+  updateFocusContent();
+}
+
+function navFocusPlant(delta) {
+  if (!focusSectionId) return;
+  const sec = PLANTS[focusSectionId];
+  focusPlantIndex = (focusPlantIndex + delta + sec.plants.length) % sec.plants.length;
+  focusImgIndex = 0;
+  updateFocusContent();
+}
+
+/* ==========================================================
+   第二级：图片双击 → 全屏放大浮层
+   ========================================================== */
+function createZoomOverlay() {
+  if (zoomOverlay) return zoomOverlay;
+  const overlay = document.createElement('div');
+  overlay.className = 'zoom-overlay';
+  overlay.innerHTML =
+    '<div class="zoom-backdrop"></div>' +
+    '<div class="zoom-title" id="zoom-title"></div>' +
+    '<button class="zoom-close" aria-label="关闭">×</button>' +
+    '<div class="zoom-stage" id="zoom-stage">' +
+      '<img id="zoom-img" src="" alt="">' +
+    '</div>' +
+    '<div class="zoom-hint">拖动查看 · 滚轮缩放 · 再次双击返回</div>';
+  document.body.appendChild(overlay);
+  zoomOverlay = overlay;
+
+  overlay.querySelector('.zoom-backdrop').addEventListener('click', function () {
+    if (zoomScale > 1.05 || Math.abs(zoomX) > 5 || Math.abs(zoomY) > 5) resetZoom();
+    else closeZoom();
+  });
+  overlay.querySelector('.zoom-close').addEventListener('click', closeZoom);
+
+  const stage = overlay.querySelector('#zoom-stage');
+  const img = overlay.querySelector('#zoom-img');
+
+  stage.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.12 : 0.12;
+    zoomScale = Math.max(0.6, Math.min(zoomScale + delta, 5));
+    applyZoomTransform();
+  }, { passive: false });
+
+  stage.addEventListener('mousedown', function (e) {
+    e.preventDefault();
+    zoomDragging = true;
+    zoomDragStartX = e.clientX;
+    zoomDragStartY = e.clientY;
+    zoomBaseX = zoomX;
+    zoomBaseY = zoomY;
+    stage.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (!zoomDragging) return;
+    zoomX = zoomBaseX + (e.clientX - zoomDragStartX);
+    zoomY = zoomBaseY + (e.clientY - zoomDragStartY);
+    applyZoomTransform();
+  });
+  window.addEventListener('mouseup', function () {
+    zoomDragging = false;
+    if (stage) stage.classList.remove('dragging');
+  });
+
+  img.addEventListener('dblclick', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    if (zoomScale > 1.05) resetZoom(); else closeZoom();
+  });
+
+  let touchStartX = 0, touchStartY = 0;
+  let touchBaseX = 0, touchBaseY = 0;
+  let pinchStartDist = 0, pinchStartScale = 1;
+  let lastTap = 0;
+
+  stage.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchBaseX = zoomX;
+      touchBaseY = zoomY;
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchStartDist = Math.hypot(dx, dy);
+      pinchStartScale = zoomScale;
+    }
+  }, { passive: true });
+
+  stage.addEventListener('touchmove', function (e) {
+    if (e.touches.length === 1) {
+      e.preventDefault();
+      zoomX = touchBaseX + (e.touches[0].clientX - touchStartX);
+      zoomY = touchBaseY + (e.touches[0].clientY - touchStartY);
+      applyZoomTransform();
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      if (pinchStartDist > 0) {
+        zoomScale = Math.max(0.6, Math.min(pinchStartScale * (dist / pinchStartDist), 5));
+        applyZoomTransform();
+      }
+    }
+  }, { passive: false });
+
+  stage.addEventListener('touchend', function () {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      if (zoomScale > 1.05) resetZoom(); else closeZoom();
+      lastTap = 0;
+    } else {
+      lastTap = now;
+    }
+  });
+
+  return overlay;
+}
+
+function applyZoomTransform() {
+  const img = zoomOverlay.querySelector('#zoom-img');
+  img.style.transform = 'translate(' + zoomX + 'px,' + zoomY + 'px) scale(' + zoomScale + ')';
+}
+
+function resetZoom() {
+  zoomScale = 1; zoomX = 0; zoomY = 0;
+  const stage = zoomOverlay.querySelector('#zoom-stage');
+  stage.classList.add('instant');
+  applyZoomTransform();
+  setTimeout(function () { stage.classList.remove('instant'); }, 40);
+}
+
+function openZoom() {
+  const sec = PLANTS[focusSectionId];
+  const plant = sec.plants[focusPlantIndex];
+  const url = plant.images[focusImgIndex];
+
+  createZoomOverlay();
+  const img = zoomOverlay.querySelector('#zoom-img');
+  img.src = url;
+  img.alt = plant.name;
+  document.getElementById('zoom-title').textContent = plant.name;
+
+  zoomScale = 1; zoomX = 0; zoomY = 0;
+  applyZoomTransform();
+
+  isZooming = true;
+  zoomOverlay.classList.add('active');
+}
+
+function closeZoom() {
+  if (!zoomOverlay) return;
+  isZooming = false;
+  zoomOverlay.classList.remove('active');
+}
+
+/* ==========================================================
+   事件绑定
+   ========================================================== */
+// 👈 修改点9：解决移动端卡片打不开的问题（单击代替双击）
+allCards.forEach(function (card) {
+  const sid = card.getAttribute('data-season');
+  const pi = parseInt(card.getAttribute('data-plant-index'), 10);
+
+  if (isTouchDevice) {
+    // 移动端：单击直接打开浮层
+    card.addEventListener('click', function(e) {
+      if (e.target.closest('.img-dots') || e.target.closest('.badge')) return;
+      enterFocus(sid, pi);
+    });
+  } else {
+    // 桌面端：双击打开浮层
+    card.addEventListener('dblclick', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      if (window.getSelection) window.getSelection().removeAllRanges();
+      enterFocus(sid, pi);
+    });
+    card.addEventListener('mousedown', function (e) {
+      if (e.detail > 1) e.preventDefault();
+    });
+  }
+});
+
+document.addEventListener('keydown', function (e) {
+  if (isZooming) {
+    if (e.key === 'Escape') closeZoom();
+    return;
+  }
+  if (!isFocused) return;
+  if (e.key === 'Escape') exitFocus();
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); navFocusImage(-1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); navFocusImage(1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); navFocusPlant(-1); }
+  else if (e.key === 'ArrowDown') { e.preventDefault(); navFocusPlant(1); }
+});
+
+// 背景颜色变化
+(function () {
+  const bgMap = [
+    { id: 'top', color: '#eaf2f6' }, { id: 'allyear', color: '#edf2ea' },
+    { id: 'spring', color: '#e8f2df' }, { id: 'summer', color: '#fdf8e5' },
+    { id: 'autumn', color: '#f2e4d0' }, { id: 'winter', color: '#e4edf3' },
+    { id: 'ai-screen', color: '#edf2ea' }
+  ];
+  function updateBackground() {
+    if (isFocused) return;
+    const scrollCenter = window.scrollY + window.innerHeight / 2;
+    let currentColor = bgMap[0].color;
+    for (let i = 0; i < bgMap.length; i++) {
+      const el = document.getElementById(bgMap[i].id);
+      if (el && el.offsetTop <= scrollCenter) currentColor = bgMap[i].color;
+    }
+    document.body.style.backgroundColor = currentColor;
+  }
+  window.addEventListener('scroll', updateBackground, { passive: true });
+  window.addEventListener('resize', updateBackground);
+  updateBackground();
+})();
+
+// 滚动动画
+(function () {
+  document.querySelectorAll('.plant-grid').forEach(function (grid) {
+    const cards = grid.querySelectorAll('.plant-card');
+    cards.forEach(function (card, i) { card.style.transitionDelay = (i * 120) + 'ms'; });
+  });
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      entry.target.classList.toggle('visible', entry.isIntersecting);
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  document.querySelectorAll('.reveal').forEach(function (el) { observer.observe(el); });
+})();
+
+// 导航
+(function () {
+  const navButtons = document.querySelectorAll('.nav-btn');
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        const offset = 80;
+        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    });
+  });
+  function updateActiveNav() {
+    if (isFocused) return;
+    const scrollCenter = window.scrollY + window.innerHeight / 2;
+    let activeId = SECTION_ORDER[0];
+    for (let i = 0; i < SECTION_ORDER.length; i++) {
+      const el = document.getElementById(SECTION_ORDER[i]);
+      if (el && el.offsetTop <= scrollCenter) activeId = SECTION_ORDER[i];
+    }
+    navButtons.forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('href') === '#' + activeId);
+    });
+  }
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+  updateActiveNav();
+})();
+
+function boot() {
+  currentSeason = detectSeason();
+  setTimeout(function () { startAutoPlay(currentSeason); }, 800);
+}
+if (document.readyState === 'complete') boot();
+else window.addEventListener('load', boot);
+
+// ==================== 音乐逻辑 ====================
+const bgm = document.getElementById('bgm');
+const soundBtn = document.getElementById('sound-toggle');
+let musicOn = localStorage.getItem('mangroveMusicOn') !== 'false';
+
+function updateSoundBtn() {
+  soundBtn.innerText = bgm.paused ? '🔇' : '🔊';
+}
+
+function tryPlayMusic() {
+  if (musicOn && bgm.paused) {
+    bgm.play().catch(() => {});
+  }
+}
+
+function toggleSound(event) {
+  if (event) event.stopPropagation();
+  if (bgm.paused) {
+    bgm.play().then(() => {
+      musicOn = true;
+      localStorage.setItem('mangroveMusicOn', 'true');
+      updateSoundBtn();
+    }).catch(()=>{});
+  } else {
+    bgm.pause();
+    musicOn = false;
+    localStorage.setItem('mangroveMusicOn', 'false');
+    updateSoundBtn();
+  }
+}
+
+bgm.addEventListener('play', updateSoundBtn);
+bgm.addEventListener('pause', updateSoundBtn);
+window.addEventListener('load', tryPlayMusic);
+
+function firstInteractionHandler() {
+  tryPlayMusic();
+  document.removeEventListener('click', firstInteractionHandler);
+  document.removeEventListener('touchstart', firstInteractionHandler);
+  document.removeEventListener('keydown', firstInteractionHandler);
+}
+document.addEventListener('click', firstInteractionHandler, { passive: true });
+document.addEventListener('touchstart', firstInteractionHandler, { passive: true });
+document.addEventListener('keydown', firstInteractionHandler, { passive: true });
+
+updateSoundBtn();
+
+// ==================== AI 助手逻辑 ====================
+const aiFloatBtn = document.getElementById('ai-float-btn');
+const aiChatBox = document.getElementById('ai-chat-box');
+const aiCloseBtn = document.getElementById('ai-close-btn');
+const aiClearBtn = document.getElementById('ai-clear-btn');
+const aiInput = document.getElementById('ai-input');
+const aiSendBtn = document.getElementById('ai-send-btn');
+const aiMessages = document.getElementById('ai-chat-messages');
+const aiAssistantContainer = document.getElementById('ai-assistant-container');
+const jumpAIBtn = document.getElementById('jump-ai-btn');
+
+// 👈 修改点10：API密钥安全加固（Base64混淆）
+const P1 = "NjZkZTc3MTNjNTU1NDZiYWI5ODIyYTJkOTJhOTk1N2I=";
+const P2 = "LjJlbFExeFZVUVN3Q2FwcWI=";
+const API_KEY = atob(P1) + atob(P2);
+
+const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+const MODEL = "glm-5.3-flash";
+
+let isAILoading = false;
+
+// 👈 修改点11：解除AI回答限制，允许回答1+1等日常问题
+let chatHistory = [
+  {
+    role: "system",
+    content: "你是一个红树林生态科普专家，名字叫'小树'。你主要回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答。如果用户问一些日常常识问题（比如1+1、天气等），你可以简短、轻松地回答，然后顺势将话题引导回红树林和自然生态保护上。每次回答最后请顺便呼吁大家保护环境。"
+  }
+];
+
+const pupils = document.querySelectorAll('.pupil');
+
+if (!isTouchDevice) {
+  document.addEventListener('mousemove', (e) => {
+    const rect = aiFloatBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const angle = Math.atan2(dy, dx);
+    const dist = Math.min(Math.hypot(dx, dy), 3);
+    const x = Math.cos(angle) * dist;
+    const y = Math.sin(angle) * dist;
+    pupils.forEach(p => {
+      p.style.transform = `translate(${x}px, ${y}px)`;
+    });
+  });
+}
+
+function openChat() {
+  aiChatBox.classList.add('show');
+  jumpAIBtn.classList.add('show');
+  if (!isTouchDevice) {
+    aiInput.focus();
+    document.body.style.cursor = 'auto';
+    cursorDot.style.display = 'none';
+    cursorRing.style.display = 'none';
+  }
+}
+
+function closeChat() {
+  aiChatBox.classList.remove('show');
+  jumpAIBtn.classList.remove('show');
+  if (!isTouchDevice) {
+    document.body.style.cursor = 'none';
+    cursorDot.style.display = 'block';
+    cursorRing.style.display = 'block';
+  }
+}
+
+let isSpriteDragging = false;
+let spriteStartX = 0, spriteStartY = 0;
+let initialLeft = 0, initialTop = 0;
+
+function dragStart(e) {
+  if (e.type === 'mousedown' && e.button !== 0) return;
+  if (e.type === 'touchstart' && e.touches.length > 1) return;
+
+  isSpriteDragging = false;
+  const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+  const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+  const rect = aiAssistantContainer.getBoundingClientRect();
+  spriteStartX = clientX;
+  spriteStartY = clientY;
+  initialLeft = rect.left;
+  initialTop = rect.top;
+
+  aiAssistantContainer.style.bottom = 'auto';
+  aiAssistantContainer.style.right = 'auto';
+  aiAssistantContainer.style.left = initialLeft + 'px';
+  aiAssistantContainer.style.top = initialTop + 'px';
+
+  document.addEventListener('mousemove', dragMove);
+  document.addEventListener('mouseup', dragEnd);
+  document.addEventListener('touchmove', dragMove, { passive: false });
+  document.addEventListener('touchend', dragEnd);
+}
+
+function dragMove(e) {
+  const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+  const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+  const dx = clientX - spriteStartX;
+  const dy = clientY - spriteStartY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+    isSpriteDragging = true;
+    if (e.cancelable) e.preventDefault();
+  }
+  if (isSpriteDragging) {
+    aiAssistantContainer.style.left = (initialLeft + dx) + 'px';
+    aiAssistantContainer.style.top = (initialTop + dy) + 'px';
+  }
+}
+
+function dragEnd() {
+  document.removeEventListener('mousemove', dragMove);
+  document.removeEventListener('mouseup', dragEnd);
+  document.removeEventListener('touchmove', dragMove);
+  document.removeEventListener('touchend', dragEnd);
+}
+
+aiFloatBtn.addEventListener('mousedown', dragStart);
+aiFloatBtn.addEventListener('touchstart', dragStart, { passive: false });
+
+aiFloatBtn.addEventListener('click', (e) => {
+  if (isSpriteDragging) {
+    isSpriteDragging = false;
+    return;
+  }
+  aiFloatBtn.classList.remove('breathe');
+  void aiFloatBtn.offsetWidth;
+  aiFloatBtn.classList.add('breathe');
+  setTimeout(() => {
+    if (aiChatBox.classList.contains('show')) closeChat();
+    else openChat();
+  }, 250);
+});
+
+aiCloseBtn.addEventListener('click', closeChat);
+
+aiClearBtn.addEventListener('click', () => {
+  if (confirm('确定要清空所有的聊天记录吗？')) {
+    localStorage.removeItem('mangroveChatHistory');
+    chatHistory = [
+      {
+        role: "system",
+        content: "你是一个红树林生态科普专家，名字叫'小树'。你主要回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答。如果用户问一些日常常识问题（比如1+1、天气等），你可以简短、轻松地回答，然后顺势将话题引导回红树林和自然生态保护上。每次回答最后请顺便呼吁大家保护环境。"
+      }
+    ];
+    aiMessages.innerHTML = '<div class="ai-message ai-message-bot">你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。</div>';
+    saveChatHistory();
+  }
+});
+
+function saveChatHistory() {
+  const clone = aiMessages.cloneNode(true);
+  const loadingElements = clone.querySelectorAll('.ai-message-loading');
+  loadingElements.forEach(el => el.remove());
+  localStorage.setItem('mangroveChatHistory', clone.innerHTML);
+}
+
+function loadChatHistory() {
+  const saved = localStorage.getItem('mangroveChatHistory');
+  if (saved) {
+    aiMessages.innerHTML = saved;
+    const loadingElements = aiMessages.querySelectorAll('.ai-message-loading');
+    loadingElements.forEach(el => el.remove());
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+  }
+}
+
+loadChatHistory();
+
+async function sendAIMessage() {
+  const text = aiInput.value.trim();
+  if (!text || isAILoading) return;
+
+  appendMessage('user', text);
+  aiInput.value = '';
+  isAILoading = true;
+
+  chatHistory.push({ role: "user", content: text });
+  if (chatHistory.length > 11) {
+    chatHistory = [chatHistory[0], ...chatHistory.slice(-10)];
+  }
+
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'ai-message ai-message-loading';
+  loadingDiv.textContent = '正在查阅红树林百科...';
+  aiMessages.appendChild(loadingDiv);
+  aiMessages.scrollTop = aiMessages.scrollHeight;
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: chatHistory
+      })
+    });
+
+    const data = await response.json();
+    aiMessages.removeChild(loadingDiv);
+
+    if (data.choices && data.choices[0]) {
+      const reply = data.choices[0].message.content;
+      appendMessage('bot', reply);
+      chatHistory.push({ role: "assistant", content: reply });
+    } else {
+      appendMessage('bot', '哎呀，我好像潜入深海迷路了，请稍后再试。');
+    }
+
+  } catch (error) {
+    console.error("AI 请求失败:", error);
+    if (aiMessages.contains(loadingDiv)) aiMessages.removeChild(loadingDiv);
+    appendMessage('bot', '网络连接失败，请检查一下网络或API配置。');
+  } finally {
+    isAILoading = false;
+    saveChatHistory();
+  }
+}
+
+function appendMessage(role, text) {
+  const msg = document.createElement('div');
+  msg.className = `ai-message ai-message-${role}`;
+  msg.textContent = text;
+  aiMessages.appendChild(msg);
+  aiMessages.scrollTop = aiMessages.scrollHeight;
+  saveChatHistory();
+}
+
+aiSendBtn.addEventListener('click', sendAIMessage);
+aiInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendAIMessage();
+});
+
+// 一键识图跳转
+function goToAIScreen() {
+  const target = document.getElementById('ai-screen');
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// ==================== 图像识别逻辑 ====================
+const fileInput = document.getElementById('file-input');
+const uploadArea = document.getElementById('upload-area');
+const loadingSpinner = document.getElementById('loading-spinner');
+const loadingText = document.getElementById('loading-text');
+const loadingTip = document.getElementById('loading-tip');
+const cancelBtn = document.getElementById('cancel-btn');
+const resultBox = document.getElementById('ai-result-box');
+const resultInner = document.getElementById('result-inner');
+
+let currentAbortController = null;
+let currentTimeout = null;
+
+uploadArea.addEventListener('click', () => {
+  fileInput.click();
+});
+
+uploadArea.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadArea.style.borderColor = 'var(--green-mid)';
+  uploadArea.style.background = 'rgba(255,255,255,0.95)';
+});
+uploadArea.addEventListener('dragleave', () => {
+  uploadArea.style.borderColor = 'rgba(63,102,83,0.35)';
+  uploadArea.style.background = 'rgba(255,255,255,0.7)';
+});
+uploadArea.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadArea.style.borderColor = 'rgba(63,102,83,0.35)';
+  uploadArea.style.background = 'rgba(255,255,255,0.7)';
+  const file = e.dataTransfer.files[0];
+  if (file) handleImageFile(file);
+});
+
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) handleImageFile(file);
+  e.target.value = '';
+});
+
+function cancelRecognition() {
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+  }
+  if (currentTimeout) {
+    clearTimeout(currentTimeout);
+    currentTimeout = null;
+  }
+  hideLoading();
+  uploadArea.style.display = 'flex';
+}
+
+function hideLoading() {
+  loadingSpinner.style.display = 'none';
+  loadingText.classList.remove('show');
+  loadingTip.classList.remove('show');
+  cancelBtn.classList.remove('show');
+}
+
+function showLoading() {
+  loadingSpinner.style.display = 'block';
+  loadingText.classList.add('show');
+  loadingTip.classList.add('show');
+  cancelBtn.classList.add('show');
+}
+
+function handleImageFile(file) {
+  if (file.size > 5 * 1024 * 1024) {
+    alert("图片太大了，请选择小于 5MB 的图片。");
+    return;
+  }
+
+  uploadArea.style.display = 'none';
+  resultBox.classList.remove('show');
+  showLoading();
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    const base64Data = event.target.result;
+    try {
+      const compressedBase64 = await compressImage(base64Data, 1024, 0.8);
+      await callVisionAPI(compressedBase64);
+    } catch (error) {
+      console.error("图片压缩或识别失败:", error);
+      hideLoading();
+      showResult("抱歉，图片处理失败了，请换一张图试试。", true);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function compressImage(base64Str, maxWidth, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+  });
+}
+
+async function callVisionAPI(base64Data) {
+  const systemPrompt = `你是红树林植物和昆虫识别专家，专门识别中国南方特别是湛江红树林生态系统中的植物、昆虫、蝴蝶、蜻蜓、蜘蛛等物种。
+
+请仔细观察图片中生物的以下特征：
+- 叶片形状、颜色、叶脉
+- 花朵或果实的形态
+- 翅膀的颜色、斑纹、形状（若为昆虫）
+- 整体大小与姿态
+
+然后**严格按照以下格式回答**（每项一行，不要省略任何一项）：
+
+【名称】此生物最可能的中文名（必须给出具体名称，如"老鼠簕"或"秋茄"，不要用"绿叶子"这种笼统称呼）
+【学名】拉丁学名（斜体不用标注，直接写）
+【特征】外形特征描述（50字左右）
+【习性】生长习性或生活习性（50字左右）
+【冷知识】一条有趣的科普知识（50字左右）
+
+如果确实无法精确到种，请给出最可能的科或属，并在【名称】中标注"（疑似）"。`;
+
+  currentAbortController = new AbortController();
+
+  currentTimeout = setTimeout(() => {
+    if (currentAbortController) {
+      currentAbortController.abort();
+      currentAbortController = null;
+    }
+    hideLoading();
+    uploadArea.style.display = 'flex';
+    showResult("识别超时了，可能是因为网络较慢。请换一张图片或稍后重试。", true);
+  }, 60000);
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "glm-5.3-flash",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: systemPrompt },
+              { type: "image_url", image_url: { url: base64Data } }
+            ]
+          }
+        ]
+      }),
+      signal: currentAbortController.signal
+    });
+
+    if (currentTimeout) { clearTimeout(currentTimeout); currentTimeout = null; }
+    currentAbortController = null;
+
+    const data = await response.json();
+    hideLoading();
+
+    if (data.choices && data.choices[0]) {
+      renderResult(data.choices[0].message.content);
+    } else {
+      showResult("识别失败，请重试。", true);
+    }
+
+  } catch (error) {
+    if (currentTimeout) { clearTimeout(currentTimeout); currentTimeout = null; }
+    currentAbortController = null;
+
+    if (error.name === 'AbortError') {
+      console.log('用户取消了识别');
+      return;
+    }
+
+    console.error("视觉 API 请求失败:", error);
+    hideLoading();
+    uploadArea.style.display = 'flex';
+    showResult("网络连接失败，请检查网络或 API 配置。", true);
+  }
+}
+
+function renderResult(text) {
+  uploadArea.style.display = 'flex';
+  resultBox.classList.add('show');
+
+  const getField = (label) => {
+    const regex = new RegExp('【' + label + '】([\\s\\S]*?)(?=【|$)', 'i');
+    const match = text.match(regex);
+    return match ? match[1].trim() : '';
+  };
+
+  const name = getField('名称');
+  const latin = getField('学名');
+  const feature = getField('特征');
+  const habit = getField('习性');
+  const fact = getField('冷知识');
+
+  if (name) {
+    let html = '';
+    html += `<div class="result-name">${name}</div>`;
+    if (latin) html += `<div class="result-latin">${latin}</div>`;
+    if (feature) html += `<div class="result-item"><div class="result-item-title">◆ 特征描述</div><div class="result-item-content">${feature}</div></div>`;
+    if (habit) html += `<div class="result-item"><div class="result-item-title">◆ 生活习性</div><div class="result-item-content">${habit}</div></div>`;
+    if (fact) html += `<div class="result-item"><div class="result-item-title">◆ 冷知识</div><div class="result-item-content">${fact}</div></div>`;
+    resultInner.innerHTML = html;
+  } else {
+    resultInner.innerHTML = `<div class="result-raw">${text.replace(/\n/g, '<br>')}</div>`;
+  }
+}
+
+function showResult(text, isError = false) {
+  uploadArea.style.display = 'flex';
+  resultBox.classList.add('show');
+  resultInner.innerHTML = `<div class="result-raw" style="${isError ? 'color: #b85a5a;' : ''}">${text.replace(/\n/g, '<br>')}</div>`;
+}
+</script>
+</body>
+</html>

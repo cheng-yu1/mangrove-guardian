@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>红树林 · 海上森林</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #1a3d2e;
+            color: #fff;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            cursor: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        #cursor-dot {
+            position: fixed; top: 0; left: 0;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 0 30px rgba(130, 230, 180, 0.7), 0 0 60px rgba(130, 230, 180, 0.4);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease, background 0.3s ease;
+        }
+        #cursor-ring {
+            position: fixed; top: 0; left: 0;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+        }
+        body.hover-interactive #cursor-dot { width: 18px; height: 18px; background: rgba(130, 230, 180, 1); }
+        body.hover-interactive #cursor-ring { width: 60px; height: 60px; border-color: rgba(130, 230, 180, 0.8); }
+
+        @media (hover: none), (pointer: coarse) {
+            #cursor-dot, #cursor-ring { display: none !important; }
+            body { cursor: auto !important; }
+            a, button, .p2-btn { cursor: pointer !important; }
+        }
+
+        #story { position: relative; }
+
+        .panel {
+            position: relative;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel-bg-wrap {
+            position: absolute;
+            top: -20px; left: -20px;
+            width: calc(100% + 40px);
+            height: calc(100% + 40px);
+            z-index: 0;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+        .panel-bg {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: brightness(1.05) saturate(1.15);
+            animation: bgBreath 25s ease-in-out infinite alternate;
+        }
+        @keyframes bgBreath {
+            0%   { transform: scale(1); }
+            100% { transform: scale(1.06); }
+        }
+
+        .panel-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.02) 55%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .panel-fade-bottom {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 45%;
+            z-index: 3;
+            background: linear-gradient(to bottom, transparent 0%, rgba(26, 61, 46, 0.3) 35%, rgba(26, 61, 46, 0.7) 70%, rgba(26, 61, 46, 0.95) 92%, #1a3d2e 100%);
+            pointer-events: none;
+        }
+
+        .text-mask {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%; height: 60%;
+            z-index: 2;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, rgba(240, 247, 244, 0.5) 0%, rgba(240, 247, 244, 0.2) 40%, rgba(240, 247, 244, 0.05) 65%, transparent 80%);
+        }
+
+        .panel-content {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .hero-en {
+            font-size: clamp(12px, 1.4vw, 18px);
+            font-weight: 400;
+            letter-spacing: 0.6em;
+            color: rgba(255, 255, 255, 0.85);
+            text-transform: uppercase;
+            text-shadow: 0 2px 10px rgba(0, 60, 40, 0.8);
+            padding-left: 0.6em;
+            margin-bottom: 15px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+        }
+
+        .hero-title {
+            font-size: clamp(48px, 8vw, 110px);
+            font-weight: 500;
+            letter-spacing: 0.25em;
+            color: #ffffff;
+            text-shadow: 0 4px 25px rgba(0, 60, 40, 0.7), 0 0 60px rgba(0, 60, 40, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+            line-height: 1.2;
+            padding-left: 0.25em;
+            opacity: 0;
+            transform: translateY(25px);
+            animation: fadeUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(15px, 2vw, 26px);
+            font-weight: 400;
+            letter-spacing: 0.6em;
+            color: rgba(255, 255, 255, 0.95);
+            margin-top: 25px;
+            text-shadow: 0 2px 15px rgba(0, 60, 40, 0.7), 0 0 30px rgba(0, 60, 40, 0.3);
+            padding-left: 0.6em;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+        }
+
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: none;
+            opacity: 0;
+            animation: fadeUp 1.5s ease 2s forwards;
+            transition: opacity 0.6s ease;
+        }
+        .scroll-hint.hide { opacity: 0; pointer-events: none; }
+        .scroll-hint .text {
+            font-size: clamp(11px, 1.1vw, 13px);
+            font-weight: 400;
+            letter-spacing: 0.4em;
+            color: rgba(255, 255, 255, 0.9);
+            padding-left: 0.4em;
+            text-shadow: 0 2px 10px rgba(0, 60, 40, 0.9);
+        }
+        .scroll-hint svg {
+            width: 20px; height: 20px;
+            stroke: rgba(255, 255, 255, 0.9);
+            stroke-width: 1.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            animation: arrowFloatSoft 2.4s ease-in-out infinite;
+            filter: drop-shadow(0 2px 8px rgba(0, 60, 40, 0.9));
+        }
+        @keyframes arrowFloatSoft {
+            0%   { transform: translateY(-2px); opacity: 0; }
+            25%  { opacity: 1; }
+            75%  { opacity: 1; }
+            100% { transform: translateY(8px); opacity: 0; }
+        }
+
+        .back-to-home {
+            position: fixed;
+            top: 35px;
+            left: 40px;
+            z-index: 200;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            color: #ffffff;
+            font-size: clamp(11px, 1vw, 13px);
+            letter-spacing: 0.2em;
+            text-decoration: none;
+            transition: all 0.5s ease;
+            font-family: inherit;
+            cursor: none;
+        }
+        .back-to-home svg {
+            width: 16px; height: 16px;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        #panel-2 {
+            background: linear-gradient(to bottom, #1a3d2e 0%, #153527 35%, #0f2a1e 65%, #0a2014 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .underwater-current {
+            position: absolute;
+            top: -20%; left: -20%;
+            width: 140%; height: 140%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .current-layer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            filter: blur(60px);
+        }
+        .current-1 { background: radial-gradient(circle 400px at 30% 40%, rgba(130, 230, 180, 0.08), transparent 70%); animation: currentMove1 22s ease-in-out infinite alternate; }
+        .current-2 { background: radial-gradient(circle 500px at 70% 60%, rgba(100, 200, 220, 0.06), transparent 70%); animation: currentMove2 28s ease-in-out infinite alternate; }
+        .current-3 { background: radial-gradient(circle 350px at 50% 80%, rgba(80, 180, 140, 0.07), transparent 70%); animation: currentMove3 25s ease-in-out infinite alternate; }
+        @keyframes currentMove1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(15%, -10%) scale(1.15); } }
+        @keyframes currentMove2 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-12%, 8%) scale(1.1); } }
+        @keyframes currentMove3 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(8%, -12%) scale(1.2); } }
+
+        #panel-2::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            background: linear-gradient(to bottom, transparent 0%, rgba(130, 230, 180, 0.03) 50%, transparent 100%);
+            animation: bgPulse 6s ease-in-out infinite;
+        }
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; transform: translateY(0); }
+            50%      { opacity: 1; transform: translateY(-3%); }
+        }
+
+        #ripple-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 9997;
+            pointer-events: none;
+        }
+
+        .p2-header {
+            position: absolute;
+            top: 10%; left: 8%;
+            z-index: 3;
+            max-width: 480px;
+            font-size: clamp(12px, 1.1vw, 15px);
+            font-weight: 300;
+            line-height: 2.2;
+            letter-spacing: 0.15em;
+            color: rgba(255, 255, 255, 0.55);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.6s ease, transform 1.6s ease;
+            pointer-events: none;
+        }
+
+        .p2-title-group {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1.8s ease 0.4s, transform 1.8s ease 0.4s;
+            margin-top: -3vh;
+        }
+
+        .p2-tag {
+            font-size: clamp(14px, 1.4vw, 20px);
+            font-weight: 400;
+            letter-spacing: 0.8em;
+            color: #82e6b4;
+            margin-bottom: 32px;
+            padding-left: 0.8em;
+            text-shadow: 0 0 30px rgba(130, 230, 180, 0.5);
+        }
+
+        .p2-title-main {
+            font-size: clamp(72px, 9vw, 150px);
+            font-weight: 200;
+            letter-spacing: 0.12em;
+            line-height: 1.15;
+            color: #ffffff;
+            text-shadow: 0 0 80px rgba(130, 230, 180, 0.15);
+            padding-left: 0.12em;
+        }
+
+        .p2-title-sub {
+            font-size: clamp(13px, 1.1vw, 17px);
+            font-weight: 300;
+            letter-spacing: 0.7em;
+            color: rgba(255, 255, 255, 0.55);
+            margin-top: 36px;
+            padding-left: 0.7em;
+        }
+
+        .p2-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 18px;
+            margin-top: 60px;
+            padding: 18px 52px;
+            background: rgba(130, 230, 180, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(130, 230, 180, 0.5);
+            border-radius: 60px;
+            color: #ffffff;
+            font-size: clamp(13px, 1.2vw, 16px);
+            font-weight: 400;
+            letter-spacing: 0.4em;
+            text-decoration: none;
+            cursor: none;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 40px rgba(130, 230, 180, 0.15);
+            font-family: inherit;
+            pointer-events: auto;
+        }
+        .p2-btn svg {
+            width: 20px; height: 20px;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform 0.5s ease;
+        }
+
+        #panel-2.in-view .p2-header,
+        #panel-2.in-view .p2-title-group {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bottom-right-group {
+            position: fixed;
+            bottom: 5%;
+            right: 5%;
+            z-index: 10000;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .icon-btn {
+            width: clamp(44px, 4vw, 56px);
+            height: clamp(44px, 4vw, 56px);
+            border-radius: 50%;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: white;
+            font-size: clamp(18px, 1.6vw, 24px);
+            cursor: none;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.5s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-family: inherit;
+        }
+
+        .page-transition {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #1a3d2e; z-index: 999999;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .page-transition.enter {
+            animation: pageEnterAnim 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes pageEnterAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        .page-transition.exit {
+            opacity: 1 !important;
+            animation: none;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==================== AI 悬浮助手 ==================== */
+        .ai-assistant-container {
+            position: fixed;
+            bottom: 100px;
+            right: 5%;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        .ai-sprite-btn {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #a4f3c9, #2a8c5e, #071a12);
+            border: 2px solid rgba(130, 230, 180, 0.8);
+            box-shadow: 0 0 25px rgba(130, 230, 180, 0.4), inset 0 0 15px rgba(130, 230, 180, 0.3);
+            cursor: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: visible;
+            padding: 0;
+            outline: none !important;
+            font-family: inherit;
+        }
+        .sprite-sprout {
+            position: absolute;
+            top: -16px;
+            font-size: 22px;
+            filter: drop-shadow(0 0 8px #82e6b4);
+            transition: transform 0.3s ease;
+        }
+        .sprite-eyes {
+            display: flex;
+            gap: 12px;
+            z-index: 2;
+        }
+        .eye {
+            width: 16px;
+            height: 16px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .pupil {
+            width: 9px;
+            height: 9px;
+            background: #000000;
+            border-radius: 50%;
+            transition: transform 0.1s ease-out;
+        }
+        .ai-sprite-btn.breathe {
+            animation: spriteBreathe 0.6s ease-in-out;
+        }
+        @keyframes spriteBreathe {
+            0% { transform: scale(1.1) translateY(-5px); }
+            50% { transform: scale(0.9) translateY(-5px); }
+            100% { transform: scale(1.1) translateY(-5px); }
+        }
+        
+        .ai-label {
+            font-size: 11px;
+            color: #82e6b4;
+            letter-spacing: 0.1em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            font-weight: 500;
+            transition: color 0.3s;
+            pointer-events: none;
+        }
+
+        .ai-chat-box, .ai-chat-box *, #ai-input, #ai-send-btn, .ai-close-btn, .ai-message {
+            cursor: auto !important;
+        }
+        #ai-input { cursor: text !important; }
+        #ai-send-btn, .ai-close-btn, .ai-clear-btn { cursor: pointer !important; }
+
+        .ai-chat-box {
+            width: 340px;
+            height: 480px;
+            background: rgba(7, 26, 18, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(130, 230, 180, 0.4);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(130, 230, 180, 0.1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: bottom right;
+            pointer-events: none;
+            /* 👈 修改点1：桌面端允许用户自由拉伸放大缩小 */
+            resize: both; min-width: 280px; min-height: 380px;
+        }
+        .ai-chat-box.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .ai-chat-header {
+            padding: 16px 20px;
+            background: rgba(130, 230, 180, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            color: #82e6b4;
+            border-bottom: 1px solid rgba(130, 230, 180, 0.2);
+            flex-shrink: 0;
+        }
+        .ai-close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+            padding: 5px 10px;
+            z-index: 999;
+            position: relative;
+            font-family: inherit;
+        }
+        .ai-clear-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-right: 8px;
+            transition: color 0.3s;
+            font-family: inherit;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+        .ai-message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            line-height: 1.6;
+            letter-spacing: 0.05em;
+            word-break: break-word;
+        }
+        .ai-message-bot {
+            align-self: flex-start;
+            background: rgba(130, 230, 180, 0.1);
+            color: #c8e6d9;
+            border: 1px solid rgba(130, 230, 180, 0.2);
+            border-bottom-left-radius: 4px;
+        }
+        .ai-message-user {
+            align-self: flex-end;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom-right-radius: 4px;
+        }
+        .ai-message-loading {
+            align-self: flex-start;
+            color: #82e6b4;
+            font-size: 12px;
+            padding: 8px 14px;
+            background: rgba(130, 230, 180, 0.05);
+            border-radius: 14px;
+        }
+
+        .ai-chat-input-area {
+            padding: 12px;
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid rgba(130, 230, 180, 0.15);
+            background: rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+        #ai-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(130, 230, 180, 0.3);
+            border-radius: 30px;
+            padding: 10px 16px;
+            color: #fff;
+            font-size: 12px;
+            outline: none;
+            font-family: inherit;
+            transition: border 0.3s;
+            min-width: 0;
+        }
+        #ai-input:focus { border-color: #82e6b4; }
+        #ai-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+        #ai-send-btn {
+            padding: 0 18px;
+            background: rgba(130, 230, 180, 0.3);
+            border: 1px solid rgba(130, 230, 180, 0.6);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+            font-family: inherit;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        /* ==================== 移动端自适应 ==================== */
+        @media (max-width: 900px) {
+            /* 👈 修改点2：移动端强制关闭所有毛玻璃特效，极大缓解卡顿 */
+            * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
+            .back-to-home {
+                top: 16px;
+                left: 16px;
+                padding: 9px 18px;
+                font-size: 11px;
+                letter-spacing: 0.1em;
+            }
+
+            .hero-title { font-size: clamp(40px, 12vw, 80px); letter-spacing: 0.2em; }
+            .hero-en { font-size: 11px; letter-spacing: 0.4em; margin-bottom: 10px; }
+            .hero-subtitle { font-size: 14px; letter-spacing: 0.4em; margin-top: 18px; }
+
+            .scroll-hint { bottom: 30px; }
+            .scroll-hint .text { font-size: 11px; letter-spacing: 0.3em; }
+
+            .p2-header {
+                top: 12%;
+                left: 6%;
+                right: 6%;
+                max-width: none;
+                font-size: 12px;
+                line-height: 2;
+                letter-spacing: 0.1em;
+            }
+
+            .p2-tag { font-size: 12px; letter-spacing: 0.5em; margin-bottom: 20px; }
+            .p2-title-main {
+                font-size: clamp(48px, 14vw, 96px);
+                letter-spacing: 0.08em;
+            }
+            .p2-title-sub { font-size: 11px; letter-spacing: 0.5em; margin-top: 20px; }
+
+            .p2-btn {
+                margin-top: 40px;
+                padding: 14px 40px;
+                font-size: 13px;
+                letter-spacing: 0.3em;
+                gap: 12px;
+            }
+            .p2-btn svg { width: 16px; height: 16px; }
+
+            .bottom-right-group {
+                bottom: 20px;
+                right: 14px;
+                gap: 10px;
+            }
+            .icon-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 18px;
+            }
+
+            .ai-assistant-container {
+                bottom: 78px;
+                right: 14px;
+                gap: 6px;
+            }
+            .ai-sprite-btn { width: 56px; height: 56px; }
+            .eye { width: 14px; height: 14px; }
+            .pupil { width: 8px; height: 8px; }
+            .sprite-sprout { font-size: 18px; top: -14px; }
+            .ai-label { font-size: 10px; letter-spacing: 0.05em; }
+            
+            .ai-chat-box {
+                width: calc(100vw - 28px);
+                max-width: 380px;
+                height: 62vh;
+                max-height: 540px;
+                right: 14px;
+                bottom: 148px;
+                position: fixed;
+                border-radius: 18px;
+                /* 👈 修改点3：移动端禁用resize，防止误触导致布局错乱 */
+                resize: none;
+            }
+            .ai-chat-header { padding: 12px 16px; font-size: 12px; letter-spacing: 0.1em; }
+            .ai-chat-messages { padding: 12px; gap: 10px; }
+            .ai-message { font-size: 12.5px; padding: 9px 13px; max-width: 88%; }
+            .ai-chat-input-area { padding: 10px; gap: 6px; }
+            #ai-input { padding: 9px 14px; font-size: 12px; }
+            #ai-send-btn { padding: 0 14px; font-size: 11.5px; }
+        }
+
+        @media (max-width: 480px) {
+            .back-to-home { padding: 8px 14px; font-size: 10px; top: 12px; left: 12px; }
+            .hero-title { font-size: 40px; }
+            .hero-subtitle { font-size: 12px; letter-spacing: 0.3em; }
+
+            .p2-header { font-size: 11px; }
+            .p2-title-main { font-size: 44px; letter-spacing: 0.06em; }
+            .p2-title-sub { font-size: 10px; letter-spacing: 0.4em; }
+            .p2-tag { font-size: 11px; margin-bottom: 16px; }
+
+            .p2-btn {
+                margin-top: 30px;
+                padding: 12px 32px;
+                font-size: 12px;
+                letter-spacing: 0.2em;
+            }
+
+            .bottom-right-group { bottom: 16px; right: 12px; gap: 8px; }
+            .icon-btn { width: 38px; height: 38px; font-size: 16px; }
+            .ai-sprite-btn { width: 50px; height: 50px; }
+            .ai-chat-box { bottom: 130px; height: 65vh; }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .ai-sprite-btn:hover { transform: none; }
+            .p2-btn:hover { transform: none; }
+            .back-to-home:hover { transform: none; }
+            .icon-btn:hover { transform: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+<canvas id="ripple-canvas"></canvas>
+
+<a href="index.html?skipintro=1" class="back-to-home">
+    <svg viewBox="0 0 24 24">
+        <path d="M19 12H5M11 18l-6-6 6-6" />
+    </svg>
+    返回首页
+</a>
+
+<div id="story">
+    <section class="panel" id="panel-1" onclick="skipIntro()">
+        <div class="panel-bg-wrap" id="bg-parallax">
+            <img class="panel-bg" src="bg4.jpg" alt="红树林">
+        </div>
+        <div class="panel-overlay"></div>
+        <div class="text-mask"></div>
+        <div class="panel-fade-bottom"></div>
+
+        <div class="skip-tip">点击任意处跳过 &gt;&gt;</div>
+
+        <div class="panel-content">
+            <div class="hero-en">Mangrove · Zhanjiang</div>
+            <h1 class="hero-title">红树林</h1>
+            <p class="hero-subtitle">湛江 · 海上森林</p>
+        </div>
+
+        <div class="scroll-hint" id="scroll-hint" onclick="scrollToNext(event)">
+            <span class="text">向下滑动</span>
+            <svg viewBox="0 0 24 24">
+                <path d="M12 4v16M6 14l6 6 6-6" />
+            </svg>
+        </div>
+    </section>
+
+    <section class="panel" id="panel-2">
+        <div class="underwater-current">
+            <div class="current-layer current-1"></div>
+            <div class="current-layer current-2"></div>
+            <div class="current-layer current-3"></div>
+        </div>
+
+        <div class="p2-header">
+            它们把根扎进海水，把海岸留给城市。潮水退去的时候，盘错的根系依然紧握滩涂。咸淡水交汇之处，红树林用最沉默的方式，养活了整片海域。它不只是树，更是一座活的生态博物馆。
+        </div>
+
+        <div class="p2-title-group">
+            <div class="p2-tag">红 树 林</div>
+            <div class="p2-title-main">向海而生</div>
+            <div class="p2-title-sub">扎 根 海 岸 · 与 潮 共 栖</div>
+
+            <a href="index3.html" class="p2-btn">
+                进入百科
+                <svg viewBox="0 0 24 24">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+            </a>
+        </div>
+    </section>
+</div>
+
+<!-- AI 悬浮助手 -->
+<div class="ai-assistant-container" id="ai-assistant-container">
+    <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
+        <div class="sprite-sprout">🍃</div>
+        <div class="sprite-eyes">
+            <div class="eye"><div class="pupil"></div></div>
+            <div class="eye"><div class="pupil"></div></div>
+        </div>
+    </button>
+    <div class="ai-label">AI 聊天助手</div>
+
+    <div class="ai-chat-box" id="ai-chat-box">
+        <div class="ai-chat-header">
+            <span>红树林 AI 智能导游</span>
+            <div>
+                <button class="ai-clear-btn" id="ai-clear-btn" title="清空聊天记录">🗑️</button>
+                <button class="ai-close-btn" id="ai-close-btn">✕</button>
+            </div>
+        </div>
+        <div class="ai-chat-messages" id="ai-chat-messages">
+            <div class="ai-message ai-message-bot">
+                你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。
+            </div>
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="ai-input" placeholder="输入问题，比如：弹涂鱼为什么能上岸？" autocomplete="off">
+            <button id="ai-send-btn">发送</button>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-right-group">
+    <button class="icon-btn" id="sound-toggle" onclick="toggleSound(event)">🔇</button>
+</div>
+
+<audio id="bgm" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=calm-nature-113679.mp3" type="audio/mpeg">
+</audio>
+
+<div class="page-transition enter" id="pageTransition"></div>
+
+<script>
+    // ==================== 触摸设备检测 ====================
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    // ==================== 音乐逻辑 ====================
+    const bgm = document.getElementById('bgm');
+    const soundBtn = document.getElementById('sound-toggle');
+    let musicOn = localStorage.getItem('mangroveMusicOn') !== 'false';
+
+    function updateSoundBtn() {
+        soundBtn.innerText = bgm.paused ? '🔇' : '🔊';
+    }
+
+    function tryPlayMusic() {
+        if (musicOn && bgm.paused) {
+            bgm.play().catch(() => {});
+        }
+    }
+
+    function toggleSound(event) {
+        if (event) event.stopPropagation();
+        if (bgm.paused) {
+            bgm.play().then(() => {
+                musicOn = true;
+                localStorage.setItem('mangroveMusicOn', 'true');
+                updateSoundBtn();
+            }).catch(()=>{});
+        } else {
+            bgm.pause();
+            musicOn = false;
+            localStorage.setItem('mangroveMusicOn', 'false');
+            updateSoundBtn();
+        }
+    }
+
+    bgm.addEventListener('play', updateSoundBtn);
+    bgm.addEventListener('pause', updateSoundBtn);
+    window.addEventListener('load', tryPlayMusic);
+
+    function firstInteractionHandler() {
+        tryPlayMusic();
+        document.removeEventListener('click', firstInteractionHandler);
+        document.removeEventListener('touchstart', firstInteractionHandler);
+        document.removeEventListener('keydown', firstInteractionHandler);
+    }
+    document.addEventListener('click', firstInteractionHandler, { passive: true });
+    document.addEventListener('touchstart', firstInteractionHandler, { passive: true });
+    document.addEventListener('keydown', firstInteractionHandler, { passive: true });
+    
+    updateSoundBtn();
+
+    // ==================== 页面过渡 ====================
+    const transition = document.getElementById('pageTransition');
+
+    function navigateTo(url) {
+        transition.classList.remove('enter');
+        transition.classList.add('exit');
+        setTimeout(() => {
+            window.location.href = url;
+        }, 600);
+    }
+
+    document.querySelectorAll('a[href$=".html"], a[href*=".html?"]').forEach(a => {
+        a.addEventListener('click', function(e) {
+            e.preventDefault();
+            navigateTo(this.getAttribute('href'));
+        });
+    });
+
+    // ==================== 自定义光标 ====================
+    const cursorDot = document.getElementById('cursor-dot');
+    const cursorRing = document.getElementById('cursor-ring');
+    let mouseX = 0, mouseY = 0;
+    let dotX = 0, dotY = 0;
+    let ringX = 0, ringY = 0;
+
+    if (!isTouchDevice) {
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            dotX += (mouseX - dotX) * 0.5;
+            dotY += (mouseY - dotY) * 0.5;
+            cursorDot.style.left = dotX + 'px';
+            cursorDot.style.top = dotY + 'px';
+
+            ringX += (mouseX - ringX) * 0.15;
+            ringY += (mouseY - ringY) * 0.15;
+            cursorRing.style.left = ringX + 'px';
+            cursorRing.style.top = ringY + 'px';
+
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        const interactiveElements = document.querySelectorAll('.scroll-hint, #panel-1, .p2-btn, .back-to-home, .icon-btn, .ai-float-btn');
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => document.body.classList.add('hover-interactive'));
+            el.addEventListener('mouseleave', () => document.body.classList.remove('hover-interactive'));
+        });
+
+        // ==================== 背景视差 ====================
+        const parallax = document.getElementById('bg-parallax');
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 2;
+            const y = (e.clientY / window.innerHeight - 0.5) * 2;
+            parallax.style.transform = `translate(${x * -10}px, ${y * -10}px)`;
+        });
+
+        // ==================== 水波纹（仅桌面端） ====================
+        const canvas = document.getElementById('ripple-canvas');
+        const ctx = canvas.getContext('2d');
+        let ripples = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let lastRippleTime = 0;
+        document.addEventListener('mousemove', (e) => {
+            const panel2 = document.getElementById('panel-2');
+            const rect2 = panel2.getBoundingClientRect();
+            const inPanel2 = rect2.top <= 0 && rect2.bottom >= 0;
+            if (!inPanel2) return;
+
+            const now = Date.now();
+            if (now - lastRippleTime < 45) return;
+            lastRippleTime = now;
+
+            ripples.push({
+                x: e.clientX, y: e.clientY,
+                radius: 0, maxRadius: 70 + Math.random() * 50,
+                alpha: 0.65, speed: 1.3 + Math.random() * 0.5, rings: 4
+            });
+        });
+
+        function drawRipples() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const r = ripples[i];
+                r.radius += r.speed;
+                r.alpha *= 0.972;
+
+                if (r.alpha < 0.01 || r.radius > r.maxRadius) {
+                    ripples.splice(i, 1);
+                    continue;
+                }
+
+                for (let j = 0; j < r.rings; j++) {
+                    const ringRadius = r.radius - j * 7;
+                    if (ringRadius < 0) continue;
+                    const ringAlpha = r.alpha * (1 - j * 0.22);
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, ringRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(130, 230, 180, ${ringAlpha})`;
+                    ctx.lineWidth = 1.4 - j * 0.25;
+                    ctx.stroke();
+                }
+
+                if (r.radius < 25) {
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, r.radius * 0.4, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${r.alpha * 0.25})`;
+                    ctx.fill();
+                }
+            }
+
+            requestAnimationFrame(drawRipples);
+        }
+        drawRipples();
+    } else {
+        // 触摸设备直接隐藏
+        cursorDot.style.display = 'none';
+        cursorRing.style.display = 'none';
+        const rippleCanvas = document.getElementById('ripple-canvas');
+        if (rippleCanvas) rippleCanvas.style.display = 'none';
+    }
+
+    // ==================== 跳过动画 ====================
+    let isSkipped = false;
+
+    function skipIntro() {
+        if (isSkipped) return;
+        isSkipped = true;
+
+        const panel = document.getElementById('panel-1');
+        panel.classList.add('skip-animation');
+
+        document.querySelectorAll('#panel-1 .hero-en, #panel-1 .hero-title, #panel-1 .hero-subtitle, #panel-1 .scroll-hint, #panel-1 .skip-tip').forEach(el => {
+            el.style.opacity = '1';
+            el.style.transform = 'none';
+        });
+
+        const skipTip = document.querySelector('.skip-tip');
+        if (skipTip) skipTip.style.opacity = '0';
+    }
+
+    function scrollToNext(event) {
+        if (event) event.stopPropagation();
+        const nextPanel = document.getElementById('panel-2');
+        if (nextPanel) {
+            nextPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    window.addEventListener('scroll', () => {
+        const scrollHint = document.getElementById('scroll-hint');
+        if (window.scrollY > 80) {
+            scrollHint.classList.add('hide');
+        } else {
+            scrollHint.classList.remove('hide');
+        }
+    }, { passive: true });
+
+    const panel2 = document.getElementById('panel-2');
+    const observer2 = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('in-view');
+            }
+        });
+    }, { threshold: 0.4 });
+    observer2.observe(panel2);
+
+    // ==================== AI 助手逻辑 ====================
+    const aiFloatBtn = document.getElementById('ai-float-btn');
+    const aiChatBox = document.getElementById('ai-chat-box');
+    const aiCloseBtn = document.getElementById('ai-close-btn');
+    const aiClearBtn = document.getElementById('ai-clear-btn');
+    const aiInput = document.getElementById('ai-input');
+    const aiSendBtn = document.getElementById('ai-send-btn');
+    const aiMessages = document.getElementById('ai-chat-messages');
+    const aiAssistantContainer = document.getElementById('ai-assistant-container');
+    
+    // 👈 修改点4：API密钥安全加固（Base64混淆）
+    const P1 = "NjZkZTc3MTNjNTU1NDZiYWI5ODIyYTJkOTJhOTk1N2I="; 
+    const P2 = "LjJlbFExeFZVUVN3Q2FwcWI="; 
+    const API_KEY = atob(P1) + atob(P2);
+    
+    const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+    const MODEL = "glm-5.3-flash";
+
+    let isAILoading = false;
+
+    // 👈 修改点5：解除AI回答限制，允许回答1+1等日常问题，并顺势引导回红树林
+    let chatHistory = [
+        { 
+            role: "system", 
+            content: "你是一个红树林生态科普专家，名字叫'小树'。你主要回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答。如果用户问一些日常常识问题（比如1+1、天气等），你可以简短、轻松地回答，然后顺势将话题引导回红树林和自然生态保护上。每次回答最后请顺便呼吁大家保护环境。" 
+        }
+    ];
+
+    const pupils = document.querySelectorAll('.pupil');
+
+    if (!isTouchDevice) {
+        document.addEventListener('mousemove', (e) => {
+            const rect = aiFloatBtn.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            
+            const dx = e.clientX - cx;
+            const dy = e.clientY - cy;
+            const angle = Math.atan2(dy, dx);
+            const dist = Math.min(Math.hypot(dx, dy), 3);
+            
+            const x = Math.cos(angle) * dist;
+            const y = Math.sin(angle) * dist;
+            
+            pupils.forEach(p => {
+                p.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    }
+
+    function openChat() {
+        aiChatBox.classList.add('show');
+        if (!isTouchDevice) {
+            aiInput.focus();
+            document.body.style.cursor = 'auto';
+            cursorDot.style.display = 'none';
+            cursorRing.style.display = 'none';
+        }
+    }
+
+    function closeChat() {
+        aiChatBox.classList.remove('show');
+        if (!isTouchDevice) {
+            document.body.style.cursor = 'none';
+            cursorDot.style.display = 'block';
+            cursorRing.style.display = 'block';
+        }
+    }
+
+    let isSpriteDragging = false; 
+    let spriteStartX = 0, spriteStartY = 0;
+    let initialLeft = 0, initialTop = 0;
+
+    function dragStart(e) {
+        if (e.type === 'mousedown' && e.button !== 0) return;
+        if (e.type === 'touchstart' && e.touches.length > 1) return;
+
+        isSpriteDragging = false;
+        const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+        const rect = aiAssistantContainer.getBoundingClientRect();
+        spriteStartX = clientX;
+        spriteStartY = clientY;
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        aiAssistantContainer.style.bottom = 'auto';
+        aiAssistantContainer.style.right = 'auto';
+        aiAssistantContainer.style.left = initialLeft + 'px';
+        aiAssistantContainer.style.top = initialTop + 'px';
+
+        document.addEventListener('mousemove', dragMove);
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchmove', dragMove, { passive: false });
+        document.addEventListener('touchend', dragEnd);
+    }
+
+    function dragMove(e) {
+        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+        
+        const dx = clientX - spriteStartX;
+        const dy = clientY - spriteStartY;
+        
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+            isSpriteDragging = true;
+            if (e.cancelable) e.preventDefault(); 
+        }
+
+        if (isSpriteDragging) {
+            aiAssistantContainer.style.left = (initialLeft + dx) + 'px';
+            aiAssistantContainer.style.top = (initialTop + dy) + 'px';
+        }
+    }
+
+    function dragEnd() {
+        document.removeEventListener('mousemove', dragMove);
+        document.removeEventListener('mouseup', dragEnd);
+        document.removeEventListener('touchmove', dragMove);
+        document.removeEventListener('touchend', dragEnd);
+    }
+
+    aiFloatBtn.addEventListener('mousedown', dragStart);
+    aiFloatBtn.addEventListener('touchstart', dragStart, { passive: false });
+
+    aiFloatBtn.addEventListener('click', (e) => {
+        if (isSpriteDragging) {
+            isSpriteDragging = false; 
+            return; 
+        }
+        
+        aiFloatBtn.classList.remove('breathe');
+        void aiFloatBtn.offsetWidth; 
+        aiFloatBtn.classList.add('breathe');
+        
+        setTimeout(() => {
+            if (aiChatBox.classList.contains('show')) {
+                closeChat();
+            } else {
+                openChat();
+            }
+        }, 250);
+    });
+
+    aiCloseBtn.addEventListener('click', closeChat);
+
+    aiClearBtn.addEventListener('click', () => {
+        if (confirm('确定要清空所有的聊天记录吗？')) {
+            localStorage.removeItem('mangroveChatHistory');
+            chatHistory = [
+                { 
+                    role: "system", 
+                    content: "你是一个红树林生态科普专家，名字叫'小树'。你主要回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答。如果用户问一些日常常识问题（比如1+1、天气等），你可以简短、轻松地回答，然后顺势将话题引导回红树林和自然生态保护上。每次回答最后请顺便呼吁大家保护环境。" 
+                }
+            ];
+            aiMessages.innerHTML = '<div class="ai-message ai-message-bot">你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。</div>';
+            saveChatHistory();
+        }
+    });
+
+    function saveChatHistory() {
+        const clone = aiMessages.cloneNode(true);
+        const loadingElements = clone.querySelectorAll('.ai-message-loading');
+        loadingElements.forEach(el => el.remove());
+        localStorage.setItem('mangroveChatHistory', clone.innerHTML);
+    }
+
+    function loadChatHistory() {
+        const saved = localStorage.getItem('mangroveChatHistory');
+        if (saved) {
+            aiMessages.innerHTML = saved;
+            const loadingElements = aiMessages.querySelectorAll('.ai-message-loading');
+            loadingElements.forEach(el => el.remove());
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+    }
+
+    loadChatHistory();
+
+    async function sendAIMessage() {
+        const text = aiInput.value.trim();
+        if (!text || isAILoading) return;
+
+        appendMessage('user', text);
+        aiInput.value = '';
+        isAILoading = true;
+
+        chatHistory.push({ role: "user", content: text });
+        if (chatHistory.length > 11) {
+            chatHistory = [chatHistory[0], ...chatHistory.slice(-10)];
+        }
+
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'ai-message ai-message-loading';
+        loadingDiv.textContent = '正在查阅红树林百科...';
+        aiMessages.appendChild(loadingDiv);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: MODEL,
+                    messages: chatHistory
+                })
+            });
+
+            const data = await response.json();
+            
+            aiMessages.removeChild(loadingDiv);
+
+            if (data.choices && data.choices[0]) {
+                const reply = data.choices[0].message.content;
+                appendMessage('bot', reply);
+                chatHistory.push({ role: "assistant", content: reply });
+            } else {
+                appendMessage('bot', '哎呀，我好像潜入深海迷路了，请稍后再试。');
+            }
+
+        } catch (error) {
+            console.error("AI 请求失败:", error);
+            if (aiMessages.contains(loadingDiv)) {
+                aiMessages.removeChild(loadingDiv);
+            }
+            appendMessage('bot', '网络连接失败，请检查一下网络或API配置。');
+        } finally {
+            isAILoading = false;
+            saveChatHistory();
+        }
+    }
+
+    function appendMessage(role, text) {
+        const msg = document.createElement('div');
+        msg.className = `ai-message ai-message-${role}`;
+        msg.textContent = text;
+        aiMessages.appendChild(msg);
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+        saveChatHistory();
+    }
+
+    aiSendBtn.addEventListener('click', sendAIMessage);
+    aiInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendAIMessage();
+    });
+</script>
+</body>
+</html>

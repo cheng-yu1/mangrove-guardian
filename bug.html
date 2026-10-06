@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>红树林微距 · 虫类画廊</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width: 100%; height: 100%;
+  background: #061208;
+  color: #f0f5e8;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  cursor: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+a, button { cursor: none; }
+
+/* ==================== 返回按钮 ==================== */
+.back-home-btn {
+  position: fixed; top: 24px; left: 24px;
+  z-index: 999999;
+  background: rgba(255,255,255,0.9);
+  color: #0a3d1c;
+  border: none; padding: 12px 26px;
+  border-radius: 50px;
+  font-size: 0.95rem; font-weight: bold; letter-spacing: 1px;
+  cursor: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s;
+  display: flex; align-items: center; gap: 8px;
+  font-family: inherit;
+}
+
+/* ==================== 自定义光标 ==================== */
+.cursor-core {
+  position: fixed; top:0; left:0;
+  pointer-events:none; z-index:9999999;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff, #ffd966);
+  box-shadow: 0 0 12px rgba(255,217,102,0.9);
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s;
+}
+.cursor-core.hover { width: 16px; height: 16px; }
+
+.cursor-ripple-el {
+  position: fixed;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 217, 102, 0.85);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999998;
+  box-shadow: 0 0 14px rgba(255,217,102,0.6), inset 0 0 10px rgba(255,217,102,0.3);
+  animation: rippleExpand 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+.cursor-ripple-el.alt {
+  border-color: rgba(200, 255, 180, 0.7);
+  box-shadow: 0 0 14px rgba(200, 255, 180, 0.5), inset 0 0 10px rgba(200, 255, 180, 0.25);
+}
+@keyframes rippleExpand {
+  0% { width: 10px; height: 10px; opacity: 1; border-width: 3px; }
+  60% { opacity: 0.6; }
+  100% { width: 90px; height: 90px; opacity: 0; border-width: 1px; }
+}
+
+/* ==================== 触摸设备：隐藏自定义光标 ==================== */
+@media (hover: none) and (pointer: coarse) {
+  body, a, button, .main-img, .upload-area, .ai-text-btn { cursor: auto !important; }
+  .cursor-core, .cursor-ripple-el { display: none !important; }
+}
+
+/* ==================== 横向滚动画廊 ==================== */
+.horizontal-scroll {
+  display: flex;
+  width: 100vw; height: 100vh;
+  height: 100dvh;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+.horizontal-scroll::-webkit-scrollbar { display: none; }
+
+.screen {
+  flex: 0 0 100vw;
+  width: 100vw; height: 100vh;
+  height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==================== 开场屏 ==================== */
+.intro-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.intro-bg {
+  position: absolute; inset: 0;
+  background: url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=2000&auto=format&fit=crop') no-repeat center center/cover;
+  filter: brightness(0.35) saturate(1.2) hue-rotate(-15deg);
+  animation: kenBurns 30s ease-in-out infinite alternate;
+}
+@keyframes kenBurns {
+  0% { transform: scale(1.1); }
+  100% { transform: scale(1.25) translate(-2%,-1%); }
+}
+.intro-glow {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(255,217,102,0.18) 0%, transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(200,255,180,0.12) 0%, transparent 60%),
+    radial-gradient(circle at center, rgba(0,0,0,0.2), rgba(0,0,0,0.85) 80%);
+}
+.fireflies {
+  position: absolute; inset: 0;
+  pointer-events: none; overflow: hidden;
+}
+.firefly {
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe89c, rgba(255,217,102,0));
+  box-shadow: 0 0 12px rgba(255,217,102,0.9), 0 0 24px rgba(255,217,102,0.5);
+  animation: floatFirefly linear infinite;
+  opacity: 0;
+}
+@keyframes floatFirefly {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 0.9; }
+  50% { transform: translateY(-40px) translateX(20px); opacity: 0.7; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(-80px) translateX(-15px); opacity: 0; }
+}
+.intro-content {
+  position: relative; z-index: 4;
+  text-align: center;
+  max-width: 900px;
+  padding: 0 40px;
+}
+.intro-content h1 {
+  font-size: 5rem;
+  letter-spacing: 14px;
+  font-weight: 200;
+  color: #f0f5e8;
+  margin-bottom: 30px;
+  text-shadow: 0 0 30px rgba(255,217,102,0.6), 0 0 60px rgba(255,217,102,0.3), 0 4px 20px rgba(0,0,0,0.9);
+}
+.intro-content p {
+  font-size: 1.15rem;
+  line-height: 2;
+  color: #c8d8b8;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+  max-width: 600px;
+  margin: 0 auto;
+}
+.scroll-hint {
+  position: absolute;
+  bottom: 40px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  color: #ffd966;
+  font-size: 0.85rem;
+  letter-spacing: 4px;
+  animation: bounceHint 2s infinite;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 15px rgba(255,217,102,0.7);
+}
+.scroll-hint::before {
+  content: '→';
+  display: block;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+}
+@keyframes bounceHint {
+  0%,100% { transform: translateX(-50%) translateX(0); opacity: 0.7; }
+  50% { transform: translateX(-50%) translateX(12px); opacity: 1; }
+}
+
+/* ==================== 卡片屏 ==================== */
+.card-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.card-screen .main-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  cursor: zoom-in;
+  z-index: 1;
+  animation: imgSlowZoom 20s ease-in-out infinite alternate;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+@keyframes imgSlowZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.06); }
+}
+.card-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top,
+      rgba(6,18,8,0.9) 0%,
+      rgba(6,18,8,0.45) 35%,
+      rgba(6,18,8,0.05) 60%,
+      transparent 75%),
+    linear-gradient(to right,
+      rgba(6,18,8,0.5) 0%,
+      rgba(6,18,8,0.15) 25%,
+      transparent 45%);
+  z-index: 2;
+  pointer-events: none;
+}
+.card-info {
+  position: absolute;
+  left: 5vw;
+  bottom: 60px;
+  z-index: 3;
+  max-width: 560px;
+  background: rgba(6, 18, 8, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 18px;
+  padding: 28px 32px;
+  border: 1px solid rgba(255,217,102,0.18);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.card-info h3 {
+  font-size: 2.4rem;
+  font-weight: 300;
+  letter-spacing: 6px;
+  color: #f0f5e8;
+  margin-bottom: 10px;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+}
+.card-info .latin {
+  font-style: italic;
+  color: #ffd966;
+  font-size: 0.9rem;
+  font-family: 'Georgia', serif;
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+.card-info .english {
+  color: #b8c8a8;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+.card-info .desc {
+  color: #d8e8c8;
+  font-size: 0.88rem;
+  line-height: 1.8;
+  margin-bottom: 12px;
+}
+.card-info .cold-fact {
+  display: block;
+  background: rgba(255,217,102,0.1);
+  border-left: 3px solid #ffd966;
+  padding: 10px 16px;
+  border-radius: 0 10px 10px 0;
+}
+.card-info .cold-fact strong {
+  color: #ffd966;
+  font-size: 0.68rem;
+  letter-spacing: 3px;
+  display: block;
+  margin-bottom: 3px;
+  font-family: 'Courier New', monospace;
+}
+.card-info .cold-fact span {
+  color: #e0f0d0;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.card-number {
+  position: absolute;
+  top: 60px; right: 60px;
+  z-index: 3;
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  letter-spacing: 6px;
+  color: rgba(255,217,102,0.95);
+  text-shadow: 0 0 15px rgba(255,217,102,0.7), 0 2px 10px rgba(0,0,0,0.9);
+}
+.card-number::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: rgba(255,217,102,0.7);
+  margin-top: 10px;
+  margin-left: auto;
+}
+
+/* ==================== AI 识图屏（最底层） ==================== */
+.ai-screen-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  padding: 60px 40px 120px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255,217,102,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(200,255,180,0.06) 0%, transparent 55%),
+    radial-gradient(circle at center, rgba(6, 18, 8, 0.85) 0%, rgba(0,0,0,0.95) 100%);
+  position: relative;
+  z-index: 2;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+.ai-screen-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,217,102,0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+.ai-screen-title {
+  font-size: 3rem;
+  font-weight: 200;
+  letter-spacing: 8px;
+  color: #ffd966;
+  margin-bottom: 16px;
+  text-shadow: 0 0 30px rgba(255,217,102,0.5);
+  position: relative; z-index: 3;
+  text-align: center;
+}
+.ai-screen-subtitle {
+  font-size: 1rem;
+  color: #c8d8b8;
+  letter-spacing: 2px;
+  margin-bottom: 36px;
+  text-align: center;
+  position: relative; z-index: 3;
+}
+.upload-area {
+  width: 100%;
+  max-width: 580px;
+  height: 220px;
+  border: 2px dashed rgba(255,217,102,0.5);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  background: rgba(255,217,102,0.05);
+  position: relative;
+  overflow: hidden;
+  z-index: 3;
+}
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 10px rgba(255,217,102,0.8));
+}
+.upload-text {
+  font-size: 1.1rem;
+  color: #ffd966;
+  letter-spacing: 2px;
+}
+.upload-hint {
+  font-size: 0.8rem;
+  color: #b8c8a8;
+  margin-top: 8px;
+}
+
+.loading-spinner {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(255,217,102,0.2);
+  border-top: 3px solid #ffd966;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 24px auto 0;
+  position: relative; z-index: 3;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.loading-text {
+  display: none;
+  color: #ffd966;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-align: center;
+  margin-top: 12px;
+  position: relative; z-index: 3;
+}
+.loading-text.show { display: block; }
+.loading-tip {
+  display: none;
+  color: #b8c8a8;
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  text-align: center;
+  margin-top: 6px;
+  position: relative; z-index: 3;
+}
+.loading-tip.show { display: block; }
+
+.cancel-btn {
+  display: none;
+  margin: 16px auto 0;
+  padding: 8px 22px;
+  background: rgba(255, 100, 100, 0.15);
+  border: 1px solid rgba(255, 100, 100, 0.5);
+  border-radius: 30px;
+  color: #ff8a8a;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.3s;
+  position: relative; z-index: 3;
+}
+.cancel-btn.show { display: inline-block; }
+
+.ai-result-box {
+  width: 100%;
+  max-width: 580px;
+  max-height: 380px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 28px;
+  padding: 4px;
+  background: rgba(255,217,102,0.05);
+  border: 1px solid rgba(255,217,102,0.2);
+  border-radius: 18px;
+  display: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 3;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,217,102,0.5) transparent;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.ai-result-box.show { display: block; }
+.ai-result-box::-webkit-scrollbar { width: 8px; }
+.ai-result-box::-webkit-scrollbar-track { background: transparent; }
+.ai-result-box::-webkit-scrollbar-thumb {
+  background: rgba(255,217,102,0.4);
+  border-radius: 4px;
+}
+
+.result-inner {
+  padding: 24px 28px;
+}
+.result-name {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #ffd966;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(255,217,102,0.4);
+}
+.result-latin {
+  font-style: italic;
+  color: #b8e0b8;
+  font-size: 0.95rem;
+  font-family: 'Georgia', serif;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+.result-item {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: rgba(6,18,8,0.5);
+  border-left: 3px solid rgba(255,217,102,0.5);
+  border-radius: 0 10px 10px 0;
+}
+.result-item-title {
+  color: #ffd966;
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-family: 'Courier New', monospace;
+}
+.result-item-content {
+  color: #e0f0d0;
+  font-size: 0.92rem;
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+}
+.result-raw {
+  color: #e0f0d0;
+  font-size: 0.92rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+/* ==================== 进度条 ==================== */
+.progress-dots {
+  position: fixed;
+  right: 40px; top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.progress-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,217,102,0.2);
+  border: 1px solid rgba(255,217,102,0.4);
+  transition: all 0.4s ease;
+  cursor: none;
+}
+.progress-dot.active {
+  background: #ffd966;
+  box-shadow: 0 0 18px rgba(255,217,102,0.9);
+  transform: scale(1.35);
+  border-color: #ffd966;
+}
+
+.progress-bar {
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  width: 300px; height: 2px;
+  background: rgba(255,217,102,0.12);
+  border-radius: 2px;
+}
+.progress-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #ffd966, #c8ff9a);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  box-shadow: 0 0 12px rgba(255,217,102,0.7);
+}
+.progress-text {
+  position: absolute;
+  bottom: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: rgba(255,217,102,0.75);
+  letter-spacing: 4px;
+  white-space: nowrap;
+}
+
+/* ==================== Lightbox ==================== */
+.lightbox {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.96);
+  z-index: 10002;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  overflow: hidden;
+}
+.lightbox.show { display: flex; opacity: 1; }
+.lightbox img {
+  max-width: 92vw; max-height: 92vh;
+  object-fit: contain;
+  user-select: none;
+  cursor: grab;
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+  -webkit-user-drag: none;
+}
+.lightbox-close {
+  position: absolute;
+  top: 30px; right: 40px;
+  width: 50px; height: 50px;
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+/* ==================== 音乐按钮 ==================== */
+.bottom-right-group {
+  position: fixed;
+  bottom: 5%;
+  right: 5%;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.icon-btn {
+  width: clamp(44px, 4vw, 56px);
+  height: clamp(44px, 4vw, 56px);
+  border-radius: 50%;
+  background: rgba(6, 18, 8, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 217, 102, 0.5);
+  color: #ffd966;
+  font-size: clamp(18px, 1.6vw, 24px);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.5s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  font-family: inherit;
+}
+
+/* ==================== AI 助手 ==================== */
+.ai-assistant-container {
+  position: fixed;
+  bottom: 100px;
+  right: 5%;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.ai-action-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-text-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 50px;
+  background: rgba(255, 217, 102, 0.15);
+  border: 1px solid rgba(255, 217, 102, 0.6);
+  color: #ffd966;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  cursor: none;
+  white-space: nowrap;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(20px);
+  pointer-events: none;
+  box-shadow: 0 0 15px rgba(255, 217, 102, 0.2);
+  font-family: inherit;
+}
+.ai-text-btn.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.ai-sprite-btn {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #a0ffc8, #2a8c5e, #061208);
+  border: 2px solid rgba(255, 217, 102, 0.8);
+  box-shadow: 0 0 25px rgba(255, 217, 102, 0.4), inset 0 0 15px rgba(200, 255, 180, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+  padding: 0;
+  outline: none !important;
+  font-family: inherit;
+}
+
+.sprite-wings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 60px;
+  z-index: 1;
+  pointer-events: none;
+}
+.wing {
+  position: absolute;
+  top: 50%;
+  width: 35px;
+  height: 45px;
+  background: linear-gradient(135deg, rgba(160, 255, 200, 0.9), rgba(0, 212, 255, 0.6));
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  box-shadow: inset 0 0 10px rgba(255,255,255,0.6), 0 0 10px rgba(0, 212, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+.wing.left { left: 10px; transform: translateY(-50%); }
+.wing.right { right: 10px; transform: translateY(-50%); }
+
+.sprite-antennae {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 20px;
+  z-index: 2;
+}
+.antenna {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  height: 18px;
+  background: #ffd966;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255, 217, 102, 0.8);
+}
+.antenna.left { left: 10px; transform: rotate(-20deg); transform-origin: bottom center; }
+.antenna.right { right: 10px; transform: rotate(20deg); transform-origin: bottom center; }
+.antenna::after {
+  content: '';
+  position: absolute;
+  top: -4px; left: -2px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #ffd966;
+  box-shadow: 0 0 8px rgba(255, 217, 102, 0.9);
+}
+
+.sprite-eyes { display: flex; gap: 12px; z-index: 3; margin-top: 4px; }
+.eye { width: 12px; height: 12px; background: transparent; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.pupil { width: 8px; height: 8px; background: #000000; border-radius: 50%; transition: transform 0.1s ease-out; }
+
+.ai-sprite-btn.breathe { animation: spriteBreathe 0.6s ease-in-out; }
+@keyframes spriteBreathe {
+  0% { transform: scale(1.1) translateY(-5px); }
+  50% { transform: scale(0.9) translateY(-5px); }
+  100% { transform: scale(1.1) translateY(-5px); }
+}
+
+.ai-label {
+  font-size: 11px;
+  color: #ffd966;
+  letter-spacing: 0.1em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  font-weight: 700;
+  transition: color 0.3s;
+  pointer-events: none;
+  margin-right: 26px;
+}
+
+/* ==================== 聊天框 ==================== */
+.ai-chat-box, .ai-chat-box *, #ai-input, #ai-send-btn, .ai-close-btn, .ai-message { cursor: auto !important; }
+#ai-input { cursor: text !important; }
+#ai-send-btn, .ai-close-btn, .ai-clear-btn { cursor: pointer !important; }
+
+.ai-chat-box {
+  width: 340px; height: 480px;
+  background: rgba(6, 18, 8, 0.95);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 217, 102, 0.4);
+  border-radius: 20px;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 217, 102, 0.1);
+  opacity: 0; visibility: hidden;
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: bottom right; pointer-events: none;
+}
+.ai-chat-box.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+.ai-chat-header {
+  padding: 16px 20px; background: rgba(255, 217, 102, 0.1);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; letter-spacing: 0.15em; color: #ffd966;
+  border-bottom: 1px solid rgba(255, 217, 102, 0.2);
+  flex-shrink: 0;
+}
+.ai-close-btn { background: none; border: none; color: #f0f5e8; font-size: 20px; opacity: 0.8; transition: opacity 0.3s; padding: 5px 10px; z-index: 999; position: relative; font-family: inherit; }
+.ai-clear-btn { background: none; border: none; color: rgba(240, 245, 232, 0.6); font-size: 14px; margin-right: 8px; transition: color 0.3s; font-family: inherit; }
+.ai-chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+.ai-message { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 13px; line-height: 1.6; letter-spacing: 0.05em; word-break: break-word; }
+.ai-message-bot { align-self: flex-start; background: rgba(255, 217, 102, 0.1); color: #c8e0ee; border: 1px solid rgba(255, 217, 102, 0.2); border-bottom-left-radius: 4px; }
+.ai-message-user { align-self: flex-end; background: rgba(255, 255, 255, 0.1); color: #f0f5e8; border: 1px solid rgba(255, 255, 255, 0.2); border-bottom-right-radius: 4px; }
+.ai-message-loading { align-self: flex-start; color: #ffd966; font-size: 12px; padding: 8px 14px; background: rgba(255, 217, 102, 0.05); border-radius: 14px; }
+.ai-chat-input-area { padding: 12px; display: flex; gap: 8px; border-top: 1px solid rgba(255, 217, 102, 0.15); background: rgba(0, 0, 0, 0.3); flex-shrink: 0; }
+#ai-input { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 217, 102, 0.3); border-radius: 30px; padding: 10px 16px; color: #f0f5e8; font-size: 12px; outline: none; font-family: inherit; transition: border 0.3s; min-width: 0; }
+#ai-input:focus { border-color: #ffd966; }
+#ai-input::placeholder { color: rgba(240, 245, 232, 0.3); }
+#ai-send-btn { padding: 0 18px; background: rgba(255, 217, 102, 0.3); border: 1px solid rgba(255, 217, 102, 0.6); border-radius: 30px; color: #f0f5e8; font-size: 12px; font-weight: 500; transition: all 0.3s; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
+
+/* ==================== 移动端适配 ==================== */
+@media (max-width: 900px) {
+  .back-home-btn {
+    top: 16px; left: 16px;
+    padding: 9px 18px;
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+  }
+
+  .card-info {
+    left: 16px; right: 16px;
+    bottom: 90px;
+    max-width: none;
+    padding: 18px 20px;
+    border-radius: 14px;
+  }
+  .card-info h3 { font-size: 1.5rem; letter-spacing: 3px; margin-bottom: 6px; }
+  .card-info .latin { font-size: 0.8rem; }
+  .card-info .english { font-size: 0.68rem; letter-spacing: 2px; margin-bottom: 10px; }
+  .card-info .desc { font-size: 0.82rem; line-height: 1.7; margin-bottom: 10px; }
+  .card-info .cold-fact { padding: 8px 12px; }
+  .card-info .cold-fact strong { font-size: 0.62rem; letter-spacing: 2px; }
+  .card-info .cold-fact span { font-size: 0.75rem; line-height: 1.5; }
+
+  .card-number {
+    top: 76px; right: 20px;
+    font-size: 0.78rem;
+    letter-spacing: 3px;
+  }
+  .card-number::after { width: 28px; margin-top: 6px; }
+
+  .intro-content { padding: 0 24px; }
+  .intro-content h1 { font-size: 2.6rem; letter-spacing: 6px; margin-bottom: 20px; }
+  .intro-content p { font-size: 0.95rem; line-height: 1.9; letter-spacing: 1px; }
+  .scroll-hint { bottom: 30px; font-size: 0.75rem; letter-spacing: 3px; }
+  .scroll-hint::before { font-size: 1.2rem; margin-bottom: 6px; }
+
+  .ai-screen-content { padding: 80px 20px 100px; }
+  .ai-screen-title { font-size: 2rem; letter-spacing: 5px; margin-bottom: 10px; }
+  .ai-screen-subtitle { font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 24px; padding: 0 10px; }
+  .upload-area { height: 160px; border-radius: 16px; padding: 0 16px; }
+  .upload-icon { font-size: 2.2rem; margin-bottom: 10px; }
+  .upload-text { font-size: 0.95rem; letter-spacing: 1px; }
+  .upload-hint { font-size: 0.72rem; margin-top: 6px; }
+
+  .ai-result-box { max-height: 45vh; margin-top: 20px; border-radius: 14px; }
+  .result-inner { padding: 18px 18px; }
+  .result-name { font-size: 1.4rem; letter-spacing: 2px; }
+  .result-latin { font-size: 0.85rem; margin-bottom: 14px; }
+  .result-item { padding: 12px 14px; margin-bottom: 12px; }
+  .result-item-title { font-size: 0.7rem; letter-spacing: 2px; }
+  .result-item-content { font-size: 0.85rem; line-height: 1.7; }
+
+  .loading-spinner { width: 38px; height: 38px; }
+  .loading-text { font-size: 0.82rem; letter-spacing: 1.5px; }
+  .loading-tip { font-size: 0.7rem; }
+  .cancel-btn { padding: 7px 18px; font-size: 0.78rem; letter-spacing: 1px; }
+
+  .progress-dots { right: 10px; gap: 8px; }
+  .progress-dot { width: 7px; height: 7px; }
+  .progress-dot.active { transform: scale(1.3); }
+
+  .progress-bar { width: 160px; bottom: 18px; height: 2px; }
+  .progress-text { font-size: 0.65rem; letter-spacing: 3px; bottom: -20px; }
+
+  .bottom-right-group {
+    bottom: 18px;
+    right: 16px;
+    gap: 10px;
+  }
+  .icon-btn { width: 42px; height: 42px; font-size: 18px; }
+
+  .ai-assistant-container {
+    bottom: 76px;
+    right: 14px;
+    gap: 6px;
+  }
+  .ai-action-row { gap: 8px; }
+
+  .ai-sprite-btn {
+    width: 56px;
+    height: 56px;
+  }
+  .sprite-wings { width: 72px; height: 48px; }
+  .wing { width: 28px; height: 36px; }
+  .wing.left { left: 8px; }
+  .wing.right { right: 8px; }
+  .sprite-antennae { top: -14px; width: 32px; height: 16px; }
+  .antenna { height: 14px; }
+  .antenna.left { left: 8px; }
+  .antenna.right { right: 8px; }
+  .sprite-eyes { gap: 10px; margin-top: 3px; }
+  .eye { width: 10px; height: 10px; }
+  .pupil { width: 7px; height: 7px; }
+
+  .ai-text-btn {
+    padding: 8px 14px;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+  }
+  .ai-label {
+    font-size: 0.62rem;
+    margin-right: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .ai-chat-box {
+    width: calc(100vw - 28px);
+    max-width: 380px;
+    height: 62vh;
+    max-height: 540px;
+    position: fixed;
+    right: 14px;
+    bottom: 148px;
+    border-radius: 18px;
+  }
+  .ai-chat-header { padding: 12px 16px; font-size: 12px; letter-spacing: 0.1em; }
+  .ai-chat-messages { padding: 12px; gap: 10px; }
+  .ai-message { font-size: 12.5px; padding: 9px 13px; max-width: 88%; }
+  .ai-chat-input-area { padding: 10px; gap: 6px; }
+  #ai-input { padding: 9px 14px; font-size: 12px; }
+  #ai-send-btn { padding: 0 14px; font-size: 11.5px; }
+
+  .lightbox-close { top: 16px; right: 16px; width: 40px; height: 40px; font-size: 1.2rem; }
+}
+
+@media (max-width: 480px) {
+  .back-home-btn { padding: 8px 14px; font-size: 0.75rem; top: 12px; left: 12px; }
+
+  .card-info {
+    left: 12px; right: 12px;
+    bottom: 80px;
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+  .card-info h3 { font-size: 1.25rem; letter-spacing: 2px; }
+  .card-info .latin { font-size: 0.72rem; }
+  .card-info .english { font-size: 0.62rem; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .card-info .desc { font-size: 0.76rem; line-height: 1.65; margin-bottom: 8px; }
+  .card-info .cold-fact { padding: 7px 10px; }
+  .card-info .cold-fact strong { font-size: 0.58rem; letter-spacing: 1.5px; margin-bottom: 2px; }
+  .card-info .cold-fact span { font-size: 0.72rem; line-height: 1.45; }
+
+  .card-number { top: 66px; right: 14px; font-size: 0.7rem; letter-spacing: 2px; }
+  .card-number::after { width: 22px; margin-top: 5px; }
+
+  .intro-content h1 { font-size: 2.1rem; letter-spacing: 4px; }
+  .intro-content p { font-size: 0.85rem; line-height: 1.8; }
+
+  .ai-screen-title { font-size: 1.7rem; letter-spacing: 3px; }
+  .ai-screen-subtitle { font-size: 0.78rem; }
+  .upload-area { height: 140px; }
+  .upload-icon { font-size: 1.8rem; }
+  .upload-text { font-size: 0.85rem; }
+  .upload-hint { font-size: 0.66rem; }
+
+  .ai-result-box { max-height: 50vh; }
+  .result-name { font-size: 1.2rem; }
+  .result-item-content { font-size: 0.8rem; }
+
+  .ai-chat-box {
+    width: calc(100vw - 20px);
+    height: 65vh;
+    right: 10px;
+    bottom: 140px;
+  }
+
+  .progress-bar { width: 130px; }
+}
+
+/* 触摸设备禁用 hover 特效 */
+@media (hover: none) and (pointer: coarse) {
+  .ai-sprite-btn:hover { transform: none; box-shadow: 0 0 25px rgba(255, 217, 102, 0.4), inset 0 0 15px rgba(200, 255, 180, 0.3); }
+  .back-home-btn:hover { background: rgba(255,255,255,0.9); transform: none; }
+}
+</style>
+</head>
+<body>
+
+<button class="back-home-btn" onclick="window.location.href='index3.html#baike-categories'">← 返回</button>
+<div class="cursor-core" id="cursorCore"></div>
+
+<div class="horizontal-scroll" id="horizontalScroll">
+
+  <!-- 开场屏 -->
+  <section class="screen intro-screen">
+    <div class="intro-bg"></div>
+    <div class="intro-glow"></div>
+    <div class="fireflies" id="fireflies"></div>
+    <div class="intro-content">
+      <h1>叶间微光</h1>
+      <p>红树林的枝叶之间，藏着一整个正在呼吸的微观王国。</p>
+    </div>
+    <div class="scroll-hint">滑动 · 进入画廊</div>
+  </section>
+
+  <!-- 01 玉带凤蝶 -->
+  <section class="screen card-screen">
+    <img class="main-img" src="bug/01.jpg" alt="玉带凤蝶" onclick="openLightbox(this.src)">
+    <div class="card-number">01 / 07</div>
+    <div class="card-info">
+      <h3>玉带凤蝶</h3>
+      <p class="latin">Papilio polytes</p>
+      <p class="english">Common Mormon</p>
+      <p class="desc">玉带凤蝶是红树林最常见的大型凤蝶之一。黑色的翅膀上，一排白色斑纹横贯而下，像一条玉带，优雅而庄重。</p>
+      <div class="cold-fact">
+        <strong>✦ 冷知识</strong>
+        <span>玉带凤蝶的雌蝶会模仿有毒的红珠凤蝶——这种"借别人的毒名保护自己"的策略，在生物学上叫"贝氏拟态"。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 蓝点紫斑蝶 -->
+  <section class="screen card-screen">
+    <img class="main-img" src="bug/02.jpg" alt="蓝点紫斑蝶" onclick="openLightbox(this.src)">
+    <div class="card-number">02 / 07</div>
+    <div class="card-info">
+      <h3>蓝点紫斑蝶</h3>
+      <p class="latin">Euploea midamus</p>
+      <p class="english">Blue-spotted Crow</p>
+      <p class="desc">蓝点紫斑蝶的翅膀在阳光下泛着神秘的蓝紫色光泽。华南地区的紫斑蝶会集体越冬，湛江的暖冬正是它们喜爱的栖息地。</p>
+      <div class="cold-fact">
+        <strong>✦ 冷知识</strong>
+        <span>紫斑蝶是"越冬迁徙"的蝴蝶。每年冬天，成千上万只聚在同一个山谷里挤在一起取暖，如同蝴蝶版的"冬日营帐"。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 虎斑蝶 -->
+  <section class="screen card-screen">
+    <img class="main-img" src="bug/03.jpg" alt="虎斑蝶" onclick="openLightbox(this.src)">
+    <div class="card-number">03 / 07</div>
+    <div class="card-info">
+      <h3>虎斑蝶</h3>
+      <p class="latin">Danaus genutia</p>
+      <p class="english">Common Tiger</p>
+      <p class="desc">虎斑蝶黑橙相间的翅膀，像老虎的斑纹，是红树林里最具视觉冲击力的蝴蝶之一。它飞得慢，却毫不畏惧天敌。</p>
+      <div class="cold-fact">
+        <strong>✦ 冷知识</strong>
+        <span>虎斑蝶的幼虫吃有毒的萝藦科植物，把毒素储存在体内。成虫后，这身毒衣让鸟儿敬而远之——漂亮的警戒色就是这么来的。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 迁粉蝶 -->
+  <section class="screen card-screen">
+    <img class="main-img" src="bug/04.jpg" alt="迁粉蝶" onclick="openLightbox(this.src)">
+    <div class="card-number">04 / 07</div>
+    <div class="card-info">
+      <h3>迁粉蝶</h3>
+      <p class="latin">Catopsilia pomona</p>
+      <p class="english">Common Emigrant</p>
+      <p class="desc">迁粉蝶因具迁徙习性而得名。在湛江红树林间，常能看到成群的迁粉蝶贴着树冠飞行，像一页页被风吹动的纸片。</p>
+      <div class="cold-fact">
+        <strong>✦ 冷知识</strong>
+        <span>蝴蝶翅膀的颜色，一半来自色素，一半来自鳞片的微观结构。结构色会随角度变化，这就是为什么有的蝴蝶越看越闪。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 碧伟蜓 -->
+  <section class="screen card-screen">
+    <img class="main-img" src="bug/05.jpg" alt="碧伟蜓" onclick="openLightbox(this.src)">
+    <div class="card-number">05 / 07</div>
+    <div class="card-info">
+      <h3>碧伟蜓</h3>
+      <p class="latin">Anax parthenope</p>
+      <p class="english">Lesser Emperor</p>
+      <p class="desc">碧伟蜓是红树林水面上最常见的大型蜻蜓。它通体碧蓝，飞行迅疾，是空中捕虫的顶级猎手。</p>
+      <div class="cold-fact">
+        <strong>✦ 冷知识</strong>
+        <span>蜻蜓的翅膀可以独立控制，能悬停、倒退、急转弯。它的复眼由近3万个小眼组成，视野几乎360度无死角。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 中华大刀螳 -->
+  <section class="screen card-screen">
+    <img class="main-img" src="bug/06.jpg" alt="中华大刀螳" onclick="openLightbox(this.src)">
+    <div class="card-number">06 / 07</div>
+    <div class="card-info">
+      <h3>中华大刀螳</h3>
+      <p class="latin">Tenodera sinensis</p>
+      <p class="english">Chinese Mantis</p>
+      <p class="desc">中华大刀螳常伏在红树林的枝条上，一动不动地等待猎物靠近。它的前足如刀刃，出击时快如闪电。</p>
+      <div class="cold-fact">
+        <strong>✦ 冷知识</strong>
+        <span>螳螂的头部可以180度旋转，是昆虫中唯一能"回头看"的。它的复眼还能感知3D影像，锁定猎物的距离。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 斑络新妇 -->
+  <section class="screen card-screen">
+    <img class="main-img" src="bug/07.jpg" alt="斑络新妇" onclick="openLightbox(this.src)">
+    <div class="card-number">07 / 07</div>
+    <div class="card-info">
+      <h3>斑络新妇</h3>
+      <p class="latin">Nephila pilipes</p>
+      <p class="english">Giant Wood Spider</p>
+      <p class="desc">斑络新妇是红树林里最大的结网蜘蛛。雌蛛体型可达5厘米，会织出直径超过一米的巨大金网，悬在树间如同一面锦旗。</p>
+      <div class="cold-fact">
+        <strong>✦ 冷知识</strong>
+        <span>斑络新妇的蛛丝在阳光下泛着金色。研究表明，这种金色能反射紫外线，反而更容易吸引昆虫撞上来——漂亮的陷阱。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 AI 识图（最底层） -->
+  <section class="screen" id="screen-ai">
+    <div class="ai-screen-content">
+      <h1 class="ai-screen-title">AI 识图助手</h1>
+      <p class="ai-screen-subtitle">上传一张红树林生物的照片，AI 将为你识别它</p>
+      
+      <input type="file" id="file-input" accept="image/*" hidden>
+      <div class="upload-area" id="upload-area">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">点击上传图片 或 拖拽到此处</div>
+        <div class="upload-hint">支持 JPG / PNG，大小不超过 5MB</div>
+      </div>
+
+      <div class="loading-spinner" id="loading-spinner"></div>
+      <div class="loading-text" id="loading-text">AI 深度思考中，正在识别物种…</div>
+      <div class="loading-tip" id="loading-tip">💡 模型推理需要 10-30 秒，请耐心等待</div>
+      <button class="cancel-btn" id="cancel-btn" onclick="cancelRecognition()">取消识别，重新上传</button>
+
+      <div class="ai-result-box" id="ai-result-box">
+        <div class="result-inner" id="result-inner"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="progress-dots" id="progressDots">
+  <div class="progress-dot active" data-index="0"></div>
+  <div class="progress-dot" data-index="1"></div>
+  <div class="progress-dot" data-index="2"></div>
+  <div class="progress-dot" data-index="3"></div>
+  <div class="progress-dot" data-index="4"></div>
+  <div class="progress-dot" data-index="5"></div>
+  <div class="progress-dot" data-index="6"></div>
+  <div class="progress-dot" data-index="7"></div>
+  <div class="progress-dot" data-index="8"></div>
+</div>
+
+<div class="progress-bar" id="progressBar">
+  <div class="progress-bar-fill" id="progressFill"></div>
+  <div class="progress-text" id="progressText">00 / 08</div>
+</div>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="大图" draggable="false">
+</div>
+
+<div class="bottom-right-group">
+    <button class="icon-btn" id="sound-toggle" onclick="toggleSound(event)">🔇</button>
+</div>
+
+<div class="ai-assistant-container" id="ai-assistant-container">
+    <div class="ai-action-row">
+        <button class="ai-text-btn" id="jump-ai-btn" onclick="goToAIScreen()">一键识图</button>
+        <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
+            <div class="sprite-antennae">
+                <div class="antenna left"></div>
+                <div class="antenna right"></div>
+            </div>
+            <div class="sprite-wings">
+                <div class="wing left"></div>
+                <div class="wing right"></div>
+            </div>
+            <div class="sprite-eyes">
+                <div class="eye"><div class="pupil"></div></div>
+                <div class="eye"><div class="pupil"></div></div>
+            </div>
+        </button>
+    </div>
+    <div class="ai-label">AI 聊天助手</div>
+
+    <div class="ai-chat-box" id="ai-chat-box">
+        <div class="ai-chat-header">
+            <span>红树林 AI 智能导游</span>
+            <div>
+                <button class="ai-clear-btn" id="ai-clear-btn" title="清空聊天记录">🗑️</button>
+                <button class="ai-close-btn" id="ai-close-btn">✕</button>
+            </div>
+        </div>
+        <div class="ai-chat-messages" id="ai-chat-messages">
+            <div class="ai-message ai-message-bot">
+                你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。
+            </div>
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="ai-input" placeholder="输入问题，比如：弹涂鱼为什么能上岸？" autocomplete="off">
+            <button id="ai-send-btn">发送</button>
+        </div>
+    </div>
+</div>
+
+<audio id="bgm" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=calm-nature-113679.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// ==================== 触摸设备检测 ====================
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+// ==================== 光标 ====================
+const cursorCore = document.getElementById('cursorCore');
+let mx = 0, my = 0, lastRippleTime = 0, rippleToggle = false;
+
+if (!isTouchDevice) {
+  document.addEventListener('mousemove', (e) => {
+    mx = e.clientX; my = e.clientY;
+    cursorCore.style.left = mx + 'px';
+    cursorCore.style.top = my + 'px';
+    const now = Date.now();
+    if (now - lastRippleTime > 70) {
+      lastRippleTime = now;
+      createRipple(mx, my);
+    }
+  });
+
+  document.addEventListener('mouseover', (e) => {
+    const t = e.target;
+    if (t.closest('button, a, .back-home-btn, .progress-dot, .main-img, .ai-float-btn, .upload-area, .ai-text-btn')) {
+      cursorCore.classList.add('hover');
+    } else {
+      cursorCore.classList.remove('hover');
+    }
+  });
+} else {
+  cursorCore.style.display = 'none';
+}
+
+function createRipple(x, y) {
+  const r = document.createElement('div');
+  r.className = 'cursor-ripple-el' + (rippleToggle ? ' alt' : '');
+  rippleToggle = !rippleToggle;
+  r.style.left = x + 'px';
+  r.style.top = y + 'px';
+  document.body.appendChild(r);
+  setTimeout(() => {
+    if (r.parentNode) r.parentNode.removeChild(r);
+  }, 950);
+}
+
+(function initFireflies() {
+  const c = document.getElementById('fireflies');
+  if (!c) return;
+  for (let i = 0; i < 40; i++) {
+    const f = document.createElement('div');
+    f.className = 'firefly';
+    f.style.left = Math.random() * 100 + '%';
+    f.style.top = (60 + Math.random() * 40) + '%';
+    f.style.animationDuration = (Math.random() * 8 + 6) + 's';
+    f.style.animationDelay = Math.random() * 8 + 's';
+    f.style.transform = `scale(${Math.random() * 1.5 + 0.6})`;
+    c.appendChild(f);
+  }
+})();
+
+// ==================== 横向滑动逻辑 ====================
+const container = document.getElementById('horizontalScroll');
+const screens = document.querySelectorAll('.screen');
+const dots = document.querySelectorAll('.progress-dot');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const totalScreens = screens.length; 
+let currentIndex = 0;
+let isAnimating = false;
+
+// 桌面端滚轮
+if (!isTouchDevice) {
+  container.addEventListener('wheel', (e) => {
+    if (e.target.closest('.ai-result-box')) {
+      return;
+    }
+    
+    e.preventDefault();
+    if (isAnimating) return;
+    const direction = e.deltaY > 0 ? 1 : -1;
+    const nextIndex = currentIndex + direction;
+    if (nextIndex < 0 || nextIndex >= totalScreens) return;
+    isAnimating = true;
+    currentIndex = nextIndex;
+    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+    updateProgress();
+    setTimeout(() => { isAnimating = false; }, 700);
+  }, { passive: false });
+
+  // 桌面端拖拽
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartScrollLeft = 0;
+
+  container.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.ai-result-box')) return;
+    isDragging = true;
+    dragStartX = e.pageX;
+    dragStartScrollLeft = container.scrollLeft;
+    container.style.scrollSnapType = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const deltaX = e.pageX - dragStartX;
+    container.scrollLeft = dragStartScrollLeft - deltaX;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    container.style.scrollSnapType = 'x mandatory';
+    const idx = Math.round(container.scrollLeft / window.innerWidth);
+    currentIndex = Math.max(0, Math.min(totalScreens - 1, idx));
+    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+    updateProgress();
+  });
+}
+
+// 手机端通过 scroll 事件自动更新索引（靠 scroll-snap 的吸附）
+container.addEventListener('scroll', () => {
+  const idx = Math.round(container.scrollLeft / window.innerWidth);
+  if (idx !== currentIndex) {
+    currentIndex = idx;
+    updateProgress();
+  }
+}, { passive: true });
+
+function updateProgress() {
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentIndex));
+  const p = currentIndex / (totalScreens - 1);
+  progressFill.style.width = (p * 100) + '%';
+
+  if (currentIndex === 0) {
+    progressText.textContent = '00 / 08';
+  } else {
+    progressText.textContent = `${String(currentIndex).padStart(2, '0')} / 08`;
+  }
+}
+
+dots.forEach((dot, i) => {
+  dot.addEventListener('click', () => {
+    currentIndex = i;
+    container.scrollTo({ left: i * window.innerWidth, behavior: 'smooth' });
+    updateProgress();
+  });
+});
+
+// 桌面端左右方向键
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' && currentIndex < totalScreens - 1) {
+    currentIndex++;
+    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+    updateProgress();
+  } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+    currentIndex--;
+    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+    updateProgress();
+  } else if (e.key === 'Escape') {
+    closeLightbox();
+  }
+});
+
+function goToAIScreen() {
+  currentIndex = totalScreens - 1;
+  container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+  updateProgress();
+}
+
+// ==================== Lightbox ====================
+let lbScale = 1, lbX = 0, lbY = 0;
+let lbDragging = false, lbStartX = 0, lbStartY = 0;
+
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightboxImg');
+  img.src = src;
+  lbScale = 1; lbX = 0; lbY = 0;
+  updateLightbox();
+  lb.classList.add('show');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
+function updateLightbox() {
+  document.getElementById('lightboxImg').style.transform = `translate(${lbX}px, ${lbY}px) scale(${lbScale})`;
+}
+
+document.getElementById('lightbox').addEventListener('wheel', (e) => {
+  e.preventDefault();
+  lbScale = Math.max(0.3, Math.min(5, lbScale + (e.deltaY > 0 ? -0.15 : 0.15)));
+  updateLightbox();
+}, { passive: false });
+
+const lbImg = document.getElementById('lightboxImg');
+lbImg.addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  lbDragging = true;
+  lbStartX = e.clientX - lbX;
+  lbStartY = e.clientY - lbY;
+});
+document.addEventListener('mousemove', (e) => {
+  if (!lbDragging) return;
+  lbX = e.clientX - lbStartX;
+  lbY = e.clientY - lbStartY;
+  updateLightbox();
+});
+document.addEventListener('mouseup', () => { lbDragging = false; });
+lbImg.addEventListener('dblclick', () => {
+  lbScale = 1; lbX = 0; lbY = 0;
+  updateLightbox();
+});
+
+updateProgress();
+
+// ==================== 音乐逻辑 ====================
+const bgm = document.getElementById('bgm');
+const soundBtn = document.getElementById('sound-toggle');
+let musicOn = localStorage.getItem('mangroveMusicOn') !== 'false';
+
+function updateSoundBtn() {
+    soundBtn.innerText = bgm.paused ? '🔇' : '🔊';
+}
+
+function tryPlayMusic() {
+    if (musicOn && bgm.paused) {
+        bgm.play().catch(() => {});
+    }
+}
+
+function toggleSound(event) {
+    if (event) event.stopPropagation();
+    if (bgm.paused) {
+        bgm.play().then(() => {
+            musicOn = true;
+            localStorage.setItem('mangroveMusicOn', 'true');
+            updateSoundBtn();
+        }).catch(()=>{});
+    } else {
+        bgm.pause();
+        musicOn = false;
+        localStorage.setItem('mangroveMusicOn', 'false');
+        updateSoundBtn();
+    }
+}
+
+bgm.addEventListener('play', updateSoundBtn);
+bgm.addEventListener('pause', updateSoundBtn);
+window.addEventListener('load', tryPlayMusic);
+
+// 首次任意交互时自动播放音乐
+function firstInteractionHandler() {
+    tryPlayMusic();
+    document.removeEventListener('click', firstInteractionHandler);
+    document.removeEventListener('touchstart', firstInteractionHandler);
+    document.removeEventListener('keydown', firstInteractionHandler);
+}
+document.addEventListener('click', firstInteractionHandler, { passive: true });
+document.addEventListener('touchstart', firstInteractionHandler, { passive: true });
+document.addEventListener('keydown', firstInteractionHandler, { passive: true });
+
+updateSoundBtn();
+
+// ==================== AI 助手逻辑 ====================
+const aiFloatBtn = document.getElementById('ai-float-btn');
+const aiChatBox = document.getElementById('ai-chat-box');
+const aiCloseBtn = document.getElementById('ai-close-btn');
+const aiClearBtn = document.getElementById('ai-clear-btn');
+const aiInput = document.getElementById('ai-input');
+const aiSendBtn = document.getElementById('ai-send-btn');
+const aiMessages = document.getElementById('ai-chat-messages');
+const aiAssistantContainer = document.getElementById('ai-assistant-container');
+
+const P1 = "66de7713c55546bab9822a2d92a9957b";
+const P2 = ".2elQ1xVUQSwCapqb";
+const API_KEY = P1 + P2;
+
+const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+const MODEL = "glm-5.3-flash"; // ✅ 统一升级到更聪明的模型
+
+let isAILoading = false;
+
+let chatHistory = [
+    { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你只回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。" }
+];
+
+const pupils = document.querySelectorAll('.pupil');
+
+if (!isTouchDevice) {
+  document.addEventListener('mousemove', (e) => {
+    const rect = aiFloatBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    
+    const dx = e.clientX - cx;
+    const dy = e.clientY - cy;
+    const angle = Math.atan2(dy, dx);
+    const dist = Math.min(Math.hypot(dx, dy), 3); 
+    
+    const x = Math.cos(angle) * dist;
+    const y = Math.sin(angle) * dist;
+    
+    pupils.forEach(p => {
+        p.style.transform = `translate(${x}px, ${y}px)`;
+    });
+  });
+}
+
+function openChat() {
+    aiChatBox.classList.add('show');
+    document.getElementById('jump-ai-btn').classList.add('show');
+    if (!isTouchDevice) aiInput.focus();
+    if (!isTouchDevice) {
+        document.body.style.cursor = 'auto';
+        cursorCore.style.display = 'none';
+    }
+}
+
+function closeChat() {
+    aiChatBox.classList.remove('show');
+    document.getElementById('jump-ai-btn').classList.remove('show');
+    if (!isTouchDevice) {
+        document.body.style.cursor = 'none';
+        cursorCore.style.display = 'block';
+    }
+}
+
+let isSpriteDragging = false; 
+let spriteStartX = 0, spriteStartY = 0;
+let initialLeft = 0, initialTop = 0;
+
+function dragStart(e) {
+    if (e.type === 'mousedown' && e.button !== 0) return;
+    if (e.type === 'touchstart' && e.touches.length > 1) return;
+
+    isSpriteDragging = false;
+    const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+    const rect = aiAssistantContainer.getBoundingClientRect();
+    spriteStartX = clientX;
+    spriteStartY = clientY;
+    initialLeft = rect.left;
+    initialTop = rect.top;
+
+    aiAssistantContainer.style.bottom = 'auto';
+    aiAssistantContainer.style.right = 'auto';
+    aiAssistantContainer.style.left = initialLeft + 'px';
+    aiAssistantContainer.style.top = initialTop + 'px';
+
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+}
+
+function dragMove(e) {
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+    
+    const dx = clientX - spriteStartX;
+    const dy = clientY - spriteStartY;
+    
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        isSpriteDragging = true;
+        if (e.cancelable) e.preventDefault(); 
+    }
+
+    if (isSpriteDragging) {
+        aiAssistantContainer.style.left = (initialLeft + dx) + 'px';
+        aiAssistantContainer.style.top = (initialTop + dy) + 'px';
+    }
+}
+
+function dragEnd() {
+    document.removeEventListener('mousemove', dragMove);
+    document.removeEventListener('mouseup', dragEnd);
+    document.removeEventListener('touchmove', dragMove);
+    document.removeEventListener('touchend', dragEnd);
+}
+
+aiFloatBtn.addEventListener('mousedown', dragStart);
+aiFloatBtn.addEventListener('touchstart', dragStart, { passive: false });
+
+aiFloatBtn.addEventListener('click', (e) => {
+    if (isSpriteDragging) {
+        isSpriteDragging = false; 
+        return; 
+    }
+    
+    aiFloatBtn.classList.remove('breathe');
+    void aiFloatBtn.offsetWidth; 
+    aiFloatBtn.classList.add('breathe');
+    
+    setTimeout(() => {
+        if (aiChatBox.classList.contains('show')) {
+            closeChat();
+        } else {
+            openChat();
+        }
+    }, 250);
+});
+
+aiCloseBtn.addEventListener('click', closeChat);
+
+aiClearBtn.addEventListener('click', () => {
+    if (confirm('确定要清空所有的聊天记录吗？')) {
+        localStorage.removeItem('mangroveChatHistory');
+        chatHistory = [
+            { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你只回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。" }
+        ];
+        aiMessages.innerHTML = '<div class="ai-message ai-message-bot">你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。</div>';
+        saveChatHistory();
+    }
+});
+
+function saveChatHistory() {
+    const clone = aiMessages.cloneNode(true);
+    const loadingElements = clone.querySelectorAll('.ai-message-loading');
+    loadingElements.forEach(el => el.remove());
+    localStorage.setItem('mangroveChatHistory', clone.innerHTML);
+}
+
+function loadChatHistory() {
+    const saved = localStorage.getItem('mangroveChatHistory');
+    if (saved) {
+        aiMessages.innerHTML = saved;
+        const loadingElements = aiMessages.querySelectorAll('.ai-message-loading');
+        loadingElements.forEach(el => el.remove());
+        aiMessages.scrollTop = aiMessages.scrollHeight;
+    }
+}
+
+loadChatHistory();
+
+async function sendAIMessage() {
+    const text = aiInput.value.trim();
+    if (!text || isAILoading) return;
+
+    appendMessage('user', text);
+    aiInput.value = '';
+    isAILoading = true;
+
+    chatHistory.push({ role: "user", content: text });
+    if (chatHistory.length > 11) {
+        chatHistory = [chatHistory[0], ...chatHistory.slice(-10)];
+    }
+
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'ai-message ai-message-loading';
+    loadingDiv.textContent = '正在查阅红树林百科...';
+    aiMessages.appendChild(loadingDiv);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: chatHistory
+            })
+        });
+
+        const data = await response.json();
+        
+        aiMessages.removeChild(loadingDiv);
+
+        if (data.choices && data.choices[0]) {
+            const reply = data.choices[0].message.content;
+            appendMessage('bot', reply);
+            chatHistory.push({ role: "assistant", content: reply });
+        } else {
+            appendMessage('bot', '哎呀，我好像潜入深海迷路了，请稍后再试。');
+        }
+
+    } catch (error) {
+        console.error("AI 请求失败:", error);
+        if (aiMessages.contains(loadingDiv)) {
+            aiMessages.removeChild(loadingDiv);
+        }
+        appendMessage('bot', '网络连接失败，请检查一下网络或API配置。');
+    } finally {
+        isAILoading = false;
+        saveChatHistory();
+    }
+}
+
+function appendMessage(role, text) {
+    const msg = document.createElement('div');
+    msg.className = `ai-message ai-message-${role}`;
+    msg.textContent = text;
+    aiMessages.appendChild(msg);
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+    saveChatHistory();
+}
+
+aiSendBtn.addEventListener('click', sendAIMessage);
+aiInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendAIMessage();
+});
+
+// ==================== 图像识别逻辑 ====================
+const fileInput = document.getElementById('file-input');
+const uploadArea = document.getElementById('upload-area');
+const loadingSpinner = document.getElementById('loading-spinner');
+const loadingText = document.getElementById('loading-text');
+const loadingTip = document.getElementById('loading-tip');
+const cancelBtn = document.getElementById('cancel-btn');
+const resultBox = document.getElementById('ai-result-box');
+const resultInner = document.getElementById('result-inner');
+
+let currentAbortController = null;
+let currentTimeout = null;
+
+resultBox.addEventListener('wheel', (e) => {
+    e.stopPropagation();
+}, { passive: false });
+
+uploadArea.addEventListener('click', () => {
+    fileInput.click();
+});
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#ffd966';
+    uploadArea.style.background = 'rgba(255,217,102,0.15)';
+});
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.style.borderColor = 'rgba(255,217,102,0.5)';
+    uploadArea.style.background = 'rgba(255,217,102,0.05)';
+});
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'rgba(255,217,102,0.5)';
+    uploadArea.style.background = 'rgba(255,217,102,0.05)';
+    const file = e.dataTransfer.files[0];
+    if (file) handleImageFile(file);
+});
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        handleImageFile(file);
+    }
+    e.target.value = '';
+});
+
+function cancelRecognition() {
+    if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+    }
+    if (currentTimeout) {
+        clearTimeout(currentTimeout);
+        currentTimeout = null;
+    }
+    hideLoading();
+    uploadArea.style.display = 'flex';
+}
+
+function hideLoading() {
+    loadingSpinner.style.display = 'none';
+    loadingText.classList.remove('show');
+    loadingTip.classList.remove('show');
+    cancelBtn.classList.remove('show');
+}
+
+function showLoading() {
+    loadingSpinner.style.display = 'block';
+    loadingText.classList.add('show');
+    loadingTip.classList.add('show');
+    cancelBtn.classList.add('show');
+}
+
+function handleImageFile(file) {
+    if (file.size > 5 * 1024 * 1024) {
+        alert("图片太大了，请选择小于 5MB 的图片。");
+        return;
+    }
+
+    uploadArea.style.display = 'none';
+    resultBox.classList.remove('show');
+    showLoading();
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        const base64Data = event.target.result;
+        
+        try {
+            const compressedBase64 = await compressImage(base64Data, 1024, 0.8);
+            await callVisionAPI(compressedBase64);
+        } catch (error) {
+            console.error("图片压缩或识别失败:", error);
+            hideLoading();
+            showResult("抱歉，图片处理失败了，请换一张图试试。", true);
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function compressImage(base64Str, maxWidth, quality) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+    });
+}
+
+async function callVisionAPI(base64Data) {
+    const systemPrompt = `你是红树林昆虫识别专家，专门识别中国南方特别是湛江红树林生态系统中的昆虫、蝴蝶、蜻蜓、蜘蛛等节肢动物。
+
+请仔细观察图片中生物的以下特征：
+- 翅膀的颜色、斑纹、形状
+- 身体颜色与形态
+- 触角、足等细节
+- 整体大小与姿态
+
+然后**严格按照以下格式回答**（每项一行，不要省略任何一项）：
+
+【名称】此生物最可能的中文名（必须给出具体名称，如"蓝点紫斑蝶"或"虎斑蝶"，不要用"黑蝴蝶"这种笼统称呼）
+【学名】拉丁学名（斜体不用标注，直接写）
+【特征】外形特征描述（50字左右）
+【习性】生活习性与食性（50字左右）
+【冷知识】一条有趣的科普知识（50字左右）
+
+如果确实无法精确到种，请给出最可能的科或属，并在【名称】中标注"（疑似）"。`;
+
+    currentAbortController = new AbortController();
+
+    currentTimeout = setTimeout(() => {
+        if (currentAbortController) {
+            currentAbortController.abort();
+            currentAbortController = null;
+        }
+        hideLoading();
+        uploadArea.style.display = 'flex';
+        showResult("识别超时了，可能是因为网络较慢。请换一张图片或稍后重试。", true);
+    }, 60000);
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "glm-5.3-flash",
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            { type: "text", text: systemPrompt },
+                            { type: "image_url", image_url: { url: base64Data } }
+                        ]
+                    }
+                ]
+            }),
+            signal: currentAbortController.signal
+        });
+
+        if (currentTimeout) {
+            clearTimeout(currentTimeout);
+            currentTimeout = null;
+        }
+        currentAbortController = null;
+
+        const data = await response.json();
+        
+        hideLoading();
+
+        if (data.choices && data.choices[0]) {
+            renderResult(data.choices[0].message.content);
+        } else {
+            showResult("识别失败，请重试。", true);
+        }
+
+    } catch (error) {
+        if (currentTimeout) {
+            clearTimeout(currentTimeout);
+            currentTimeout = null;
+        }
+        currentAbortController = null;
+
+        if (error.name === 'AbortError') {
+            console.log('用户取消了识别');
+            return;
+        }
+
+        console.error("视觉 API 请求失败:", error);
+        hideLoading();
+        uploadArea.style.display = 'flex';
+        showResult("网络连接失败，请检查网络或 API 配置。", true);
+    }
+}
+
+function renderResult(text) {
+    uploadArea.style.display = 'flex';
+    resultBox.classList.add('show');
+
+    const getField = (label) => {
+        const regex = new RegExp('【' + label + '】([\\s\\S]*?)(?=【|$)', 'i');
+        const match = text.match(regex);
+        return match ? match[1].trim() : '';
+    };
+
+    const name = getField('名称');
+    const latin = getField('学名');
+    const feature = getField('特征');
+    const habit = getField('习性');
+    const fact = getField('冷知识');
+
+    if (name) {
+        let html = '';
+        html += `<div class="result-name">${name}</div>`;
+        if (latin) html += `<div class="result-latin">${latin}</div>`;
+        if (feature) html += `<div class="result-item"><div class="result-item-title">◆ 特征描述</div><div class="result-item-content">${feature}</div></div>`;
+        if (habit) html += `<div class="result-item"><div class="result-item-title">◆ 生活习性</div><div class="result-item-content">${habit}</div></div>`;
+        if (fact) html += `<div class="result-item"><div class="result-item-title">◆ 冷知识</div><div class="result-item-content">${fact}</div></div>`;
+        resultInner.innerHTML = html;
+    } else {
+        resultInner.innerHTML = `<div class="result-raw">${text.replace(/\n/g, '<br>')}</div>`;
+    }
+}
+
+function showResult(text, isError = false) {
+    uploadArea.style.display = 'flex';
+    resultBox.classList.add('show');
+    resultInner.innerHTML = `<div class="result-raw" style="${isError ? 'color: #ff8a8a;' : ''}">${text.replace(/\n/g, '<br>')}</div>`;
+}
+</script>
+</body>
+</html>
