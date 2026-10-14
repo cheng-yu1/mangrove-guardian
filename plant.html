@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>红树林伴生植物 · 四季图鉴</title>
+
+<!-- ============================================================
+     首屏关键图片预加载：比 JS 更早开始下载，解决"图片加载慢"
+     ============================================================ -->
+<link rel="preload" as="image" href="plant/bg9.jpg">
+<link rel="preload" as="image" href="plant/pandanus_1.jpg">
+<link rel="preload" as="image" href="plant/pandanus_2.jpg">
+<link rel="preload" as="image" href="plant/pandanus_3.jpg">
+<link rel="preload" as="image" href="plant/kuliangshu_1.jpg">
+<link rel="preload" as="image" href="plant/kuliangshu_2.jpg">
+<link rel="preload" as="image" href="plant/kuliangshu_3.jpg">
+
 <style>
   :root {
     --sea-light:#d9e8ef; --sea-mid:#a8c8d8; --sea-deep:#5c8091;
@@ -313,7 +325,6 @@
     z-index:3;
   }
 
-  /* ===== 图片：容器统一 16/10，图片 contain 不裁剪 ===== */
   .plant-image {
     position:relative; width:100%; aspect-ratio:16/10;
     overflow:hidden;
@@ -443,7 +454,6 @@
   }
   .reveal.visible { opacity:1; transform:translateY(0); }
 
-  /* ===== AI 识图 ===== */
   .ai-screen {
     position:relative;
     min-height:100vh;
@@ -669,7 +679,6 @@
     white-space:pre-wrap;
   }
 
-  /* ===== 浮层（放大卡片） ===== */
   .focus-overlay {
     position:fixed; inset:0; z-index:10000;
     display:flex; align-items:center; justify-content:center;
@@ -770,7 +779,6 @@
   .focus-card .plant-tag { padding:12px 16px; font-size:13px; line-height:1.7; }
   .focus-card .plant-source { font-size:11px; }
 
-  /* ===== 浮层导航按钮：fixed 定位贴屏幕边缘，永远可点击 ===== */
   .focus-nav {
     position: fixed;
     top: 50%;
@@ -975,16 +983,27 @@
     pointer-events: none;
   }
   .ai-action-row,
+  .ai-sprite-box,
   .ai-sprite-btn,
   .ai-text-btn,
   .ai-label,
   .ai-chat-box {
     pointer-events: auto;
   }
+
+  /* 一键识图 + 精灵：桌面端横排 */
   .ai-action-row {
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+
+  /* 精灵 + label 纵向容器，让 label 精确居中于精灵 */
+  .ai-sprite-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
   }
 
   .ai-text-btn {
@@ -1009,6 +1028,7 @@
     box-shadow: 0 6px 22px rgba(63,102,83,0.18), 0 2px 6px rgba(63,102,83,0.08);
     font-family: inherit;
     text-indent: 0.12em;
+    /* 移除 margin-right，间距交给父级 gap 控制 */
   }
   .ai-text-btn.show {
     opacity: 1;
@@ -1072,6 +1092,8 @@
     50% { transform: scale(0.9) translateY(-5px); }
     100% { transform: scale(1.1) translateY(-5px); }
   }
+
+  /* label：文本居中于精灵下方，移除原 margin-right 偏移 */
   .ai-label {
     font-size: 11px;
     color: #2a8c5e;
@@ -1080,7 +1102,8 @@
     font-weight: 700;
     transition: color 0.3s;
     pointer-events: none;
-    margin-right: 26px;
+    text-align: center;
+    white-space: nowrap;
   }
 
   .ai-chat-box, .ai-chat-box *, #ai-input, #ai-send-btn, .ai-close-btn, .ai-message {
@@ -1103,6 +1126,9 @@
     transform-origin: bottom right;
     pointer-events: none;
     resize: both; min-width: 280px; min-height: 380px;
+    position: absolute;
+    bottom: calc(100% + 12px);
+    right: 0;
   }
   .ai-chat-box.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
   .ai-chat-header {
@@ -1223,7 +1249,6 @@
   }
   .icon-btn svg { width: 22px; height: 22px; }
 
-  /* ==================== 页内 Toast ==================== */
   .toast-container {
     position: fixed;
     top: 24px; left: 50%;
@@ -1348,7 +1373,6 @@
     .focus-card .focus-image { aspect-ratio:16/8; max-height:32vh; }
     .focus-card .focus-image img { padding: 10px; }
 
-    /* 移动端：图片导航更靠内一些，避免在屏幕最边缘不好点 */
     .focus-prev { left: 12px; }
     .focus-next { right: 12px; }
     .focus-nav { opacity: 0.9; }
@@ -1367,24 +1391,39 @@
     .zoom-title { top:16px; left:16px; font-size:12px; padding:8px 16px; }
     .zoom-close { top:14px; right:14px; width:40px; height:40px; font-size:20px; }
 
-    .ai-assistant-container { bottom: 95px; right: 14px; gap: 6px; }
-    .ai-action-row { gap: 8px; }
+    /* ============ 手机端 AI 助手：垂直布局 ============ */
+    .ai-assistant-container { bottom: 100px; right: 14px; gap: 6px; }
+
+    /* 手机端改为纵向：精灵在上，一键识图在下 */
+    .ai-action-row {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .ai-sprite-box { order: 1; }
+    .ai-text-btn {
+      order: 2;
+      padding: 10px 18px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+
     .ai-sprite-btn { width: 56px; height: 56px; }
     .eye { width: 14px; height: 14px; }
     .pupil { width: 8px; height: 8px; }
     .sprite-sprout svg { width: 18px; height: 18px; }
     .sprite-sprout { top: -14px; }
-    .ai-label { font-size: 10px; margin-right: 20px; }
-    .ai-text-btn { padding: 9px 16px; font-size: 12px; letter-spacing: 0.08em; }
+    .ai-label { font-size: 10px; }
 
+    /* 手机端聊天框：位置提高，避开一键识图 + 精灵 + label 区域 */
     .ai-chat-box {
       width: calc(100vw - 28px);
       max-width: 380px;
-      height: 62vh;
-      max-height: 540px;
-      right: 14px;
-      bottom: 148px;
-      position: fixed;
+      height: 58vh;
+      max-height: 500px;
+      right: 0;
+      bottom: calc(100% + 14px);
+      position: absolute;
       border-radius: 18px;
       resize: none;
     }
@@ -1421,10 +1460,11 @@
     .result-inner { padding:18px 18px; }
     .result-name { font-size:17px; }
 
+    .ai-assistant-container { bottom: 90px; right: 12px; }
     .ai-sprite-btn { width: 50px; height: 50px; }
-    .ai-text-btn { padding: 8px 14px; font-size: 11.5px; }
-    .ai-label { font-size: 9px; margin-right: 18px; }
-    .ai-chat-box { bottom: 130px; height: 65vh; }
+    .ai-text-btn { padding: 9px 16px; font-size: 11.5px; }
+    .ai-label { font-size: 9px; }
+    .ai-chat-box { height: 60vh; max-height: 480px; }
 
     .bottom-right-group { bottom: 16px; right: 12px; gap: 8px; }
     .icon-btn { width: 38px; height: 38px; }
@@ -1535,23 +1575,30 @@
   </button>
 </div>
 
+<!-- ==================== AI 悬浮助手 ====================
+     结构：一键识图 + (精灵 + label) 在 action-row 里
+     桌面：一键识图在左，精灵在右，label 居中于精灵下方
+     手机：action-row 变 column，精灵在上、一键识图在下
+     ==================================================== -->
 <div class="ai-assistant-container" id="ai-assistant-container">
   <div class="ai-action-row">
     <button class="ai-text-btn" id="jump-ai-btn" onclick="goToAIScreen()">一键识图</button>
-    <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
-      <div class="sprite-sprout" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
-          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-        </svg>
-      </div>
-      <div class="sprite-eyes">
-        <div class="eye"><div class="pupil"></div></div>
-        <div class="eye"><div class="pupil"></div></div>
-      </div>
-    </button>
+    <div class="ai-sprite-box">
+      <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
+        <div class="sprite-sprout" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/>
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+          </svg>
+        </div>
+        <div class="sprite-eyes">
+          <div class="eye"><div class="pupil"></div></div>
+          <div class="eye"><div class="pupil"></div></div>
+        </div>
+      </button>
+      <div class="ai-label">AI 聊天助手</div>
+    </div>
   </div>
-  <div class="ai-label">AI 聊天助手</div>
 
   <div class="ai-chat-box" id="ai-chat-box">
     <div class="ai-chat-header">
@@ -1733,10 +1780,12 @@ const PLANTS = {
 const SECTION_ORDER = ['allyear', 'spring', 'summer', 'autumn', 'winter'];
 
 /* ==========================================================
-   预加载策略（分三档）
-   1. 首屏：当前 section（立即）
-   2. 相邻：下一个 section（load 后）
-   3. 全部：剩余 section（idle 时逐步）
+   预加载策略（三档）
+   1. head 里静态 preload 首屏 section 图片
+   2. DOMContentLoaded 后立即 link preload 相邻 section
+   3. idle 时全量 link preload 剩余 section
+   用 <link rel="preload" as="image"> 而不是 new Image()，
+   浏览器的预加载扫描器会优先处理，下载优先级更高
    ========================================================== */
 const preloadedSections = new Set();
 function preloadSection(sid) {
@@ -1746,8 +1795,13 @@ function preloadSection(sid) {
   if (!sec) return;
   sec.plants.forEach(plant => {
     plant.images.forEach(url => {
-      const img = new Image();
-      img.src = url;
+      // 去重
+      if (document.querySelector('link[rel="preload"][href="' + url + '"]')) return;
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = url;
+      document.head.appendChild(link);
     });
   });
 }
@@ -1775,6 +1829,9 @@ function renderSections() {
   SECTION_ORDER.forEach(function (sid, si) {
     const sec = PLANTS[sid];
     const seasonIcon = SEASON_ICON[sid] || ICONS.leaf;
+    // allyear（第一个 section）用 eager 加载首屏图片，其他用 lazy
+    const isEagerSection = (sid === SECTION_ORDER[0]);
+
     html += '<section class="section ' + sid + '" id="' + sid + '" data-season="' + sid + '">';
     html += '<div class="section-inner">';
     html += '<div class="season-header reveal">';
@@ -1795,7 +1852,10 @@ function renderSections() {
       html += '<article class="plant-card reveal" data-season="' + sid + '" data-plant-index="' + pi + '" tabindex="0" role="button" aria-label="' + p.name + '，点击查看详情">';
       html += '<div class="plant-image">';
       p.images.forEach(function (url, ii) {
-        html += '<img src="' + url + '" alt="' + p.name + ' 图' + (ii+1) + '" class="' + (ii===0?'active':'') + '" data-img-index="' + ii + '" loading="lazy" decoding="async">';
+        const loadAttr = isEagerSection
+          ? 'loading="eager" fetchpriority="' + (ii === 0 ? 'high' : 'auto') + '"'
+          : 'loading="lazy"';
+        html += '<img src="' + url + '" alt="' + p.name + ' 图' + (ii+1) + '" class="' + (ii===0?'active':'') + '" data-img-index="' + ii + '" ' + loadAttr + ' decoding="async">';
       });
       html += '<span class="badge">' + p.badge + '</span>';
       html += '<div class="img-dots" aria-hidden="true">';
@@ -1864,29 +1924,20 @@ let zoomDragStartX = 0, zoomDragStartY = 0;
 let zoomBaseX = 0, zoomBaseY = 0;
 
 /* ==========================================================
-   History 状态管理（解决手机返回键大退问题）
-   - 页面加载时：replaceState 基线态
-   - 打开浮层：pushState 一层
-   - popstate：
-     * 如果浮层打开 → 关闭浮层（不真正回退）
-     * 否则 → 跳回 index3 的书本屏
+   History 状态管理
    ========================================================== */
 const HISTORY_BASE_KEY = 'plant-base';
 const HISTORY_FOCUS_KEY = 'plant-focus';
 
-// 初始基线
 history.replaceState({ view: HISTORY_BASE_KEY }, '', location.href);
 
 window.addEventListener('popstate', function(e) {
   if (isFocused) {
-    // 用户在浮层打开时按了返回：关闭浮层，并重新 push 基线态
     actuallyExitFocus();
-    // 立即 pushState 一层基线，防止接下来再按返回就大退
     history.pushState({ view: HISTORY_BASE_KEY }, '', location.href);
     return;
   }
 
-  // 用户在主页按了返回：回 index3 的书本屏
   if (!isZooming) {
     goBackToIndex3();
   }
@@ -2143,7 +2194,6 @@ function createFocusOverlay() {
 
   const focusImageEl = overlay.querySelector('.focus-image');
   if (isTouchDevice) {
-    // 手机端：单击图片放大；同时支持左右滑动手势切换图片
     focusImageEl.addEventListener('click', function(e) {
       if (isImageSwiped) { isImageSwiped = false; return; }
       if (e.target.tagName === 'IMG') {
@@ -2161,7 +2211,6 @@ function createFocusOverlay() {
   return overlay;
 }
 
-// 手机端左右滑动切换图片
 let isImageSwiped = false;
 function setupFocusSwipe(el) {
   let startX = 0, startY = 0, moved = false;
@@ -2288,17 +2337,14 @@ function enterFocus(sectionId, plantIndex) {
     if (closeBtn) closeBtn.focus();
   }, 100);
 
-  // 打开浮层时 pushState 一层，为返回键做准备
   history.pushState({ view: HISTORY_FOCUS_KEY }, '', location.href);
 }
 
-// 用户点关闭按钮/遮罩：触发 popstate 路径关闭（不再单独处理）
 function closeFocusAndHistory() {
   if (!isFocused) return;
-  history.back(); // 触发 popstate → actuallyExitFocus
+  history.back();
 }
 
-// 真正执行关闭（由 popstate 触发）
 function actuallyExitFocus() {
   if (!isFocused) return;
   if (isZooming) closeZoom();
@@ -2599,15 +2645,20 @@ document.addEventListener('keydown', function (e) {
   updateActiveNav();
 })();
 
+/* ==========================================================
+   Boot：提前到 DOMContentLoaded，尽早开始预加载
+   ========================================================== */
 function boot() {
   currentSeason = detectSeason();
   preloadAround(currentSeason);
   setTimeout(function () { startAutoPlay(currentSeason); }, 800);
-  // 空闲时全量预加载，用户滑动时不再等图片
   preloadAllInIdle();
 }
-if (document.readyState === 'complete') boot();
-else window.addEventListener('load', boot);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
 
 /* ==================== 音乐逻辑 ==================== */
 const bgm = document.getElementById('bgm');
@@ -2812,9 +2863,6 @@ aiClearBtn.addEventListener('click', async () => {
   saveChatHistory();
 });
 
-/* ==========================================================
-   聊天记录：跨页兼容
-   ========================================================== */
 function saveChatHistory() {
   try {
     const msgs = aiMessages.querySelectorAll('.ai-message');
