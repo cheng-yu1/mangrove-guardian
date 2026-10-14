@@ -322,11 +322,12 @@
   }
   .plant-image img {
     position:absolute; inset:0; width:100%; height:100%;
-    object-fit:contain;      /* 不裁剪，完整显示 */
+    object-fit:contain;
     object-position:center;
     display:block;
     padding:12px;
-    opacity:0; transition:opacity 0.7s ease;
+    opacity:0;
+    transition:opacity 0.7s ease;
   }
   .plant-image img.active { opacity:1; }
   .plant-image::after {
@@ -971,7 +972,6 @@
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
-    /* 关键：容器本身不拦截点击，只有子元素可交互 */
     pointer-events: none;
   }
   .ai-action-row,
@@ -987,7 +987,6 @@
     gap: 12px;
   }
 
-  /* ===== 一键识图按钮：白色实心 + 柔和阴影，明显可见 ===== */
   .ai-text-btn {
     display: inline-flex;
     align-items: center;
@@ -1339,7 +1338,7 @@
     .loading-tip { font-size:11px; }
     .cancel-btn { font-size:12px; padding:8px 20px; }
 
-    .focus-nav { width:44px; height:44px; font-size:22px; }
+    .focus-nav { width:48px; height:48px; font-size:24px; }
     .focus-card-wrap { gap:10px; }
     .focus-close { top:16px; right:16px; width:42px; height:42px; font-size:20px; }
     .focus-body { padding:20px 24px 24px; }
@@ -1349,18 +1348,18 @@
     .focus-card .focus-image { aspect-ratio:16/8; max-height:32vh; }
     .focus-card .focus-image img { padding: 10px; }
 
-    /* 移动端：图片导航保持左右两侧，植物导航移到右上角，避免和底部指示器撞车 */
-    .focus-prev { left: 8px; }
-    .focus-next { right: 8px; }
-    .focus-nav { opacity: 0.85; }
+    /* 移动端：图片导航更靠内一些，避免在屏幕最边缘不好点 */
+    .focus-prev { left: 12px; }
+    .focus-next { right: 12px; }
+    .focus-nav { opacity: 0.9; }
 
     .plant-switch {
-      top: 16px;
+      top: 14px;
       bottom: auto;
       padding: 4px;
     }
-    .plant-prev { left: auto; right: 74px; }
-    .plant-next { right: 16px; left: auto; }
+    .plant-prev { left: auto; right: 72px; }
+    .plant-next { right: 14px; left: auto; }
     .plant-switch .switch-label { display: none; }
     .plant-switch .switch-icon { width: 42px; height: 42px; font-size: 18px; background: rgba(0,0,0,0.5); }
 
@@ -1406,7 +1405,7 @@
     .plant-name { font-size:18px; }
     .plant-body { padding:18px 16px 20px; }
     .back-btn { padding:8px 14px; font-size:11px; }
-    .focus-nav { width:38px; height:38px; font-size:18px; }
+    .focus-nav { width:44px; height:44px; font-size:22px; }
     .focus-card { width:96vw; }
     .focus-body { padding:18px 20px 22px; }
     .focus-card .plant-name { font-size:20px; }
@@ -1459,7 +1458,7 @@
 <div id="cursor-dot"></div>
 <div id="cursor-ring"></div>
 
-<a href="index3.html" class="back-btn" aria-label="返回百科">
+<a href="index3.html#library-section" class="back-btn" id="backBtn" aria-label="返回百科">
   <svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
   返回百科
 </a>
@@ -1733,6 +1732,12 @@ const PLANTS = {
 
 const SECTION_ORDER = ['allyear', 'spring', 'summer', 'autumn', 'winter'];
 
+/* ==========================================================
+   预加载策略（分三档）
+   1. 首屏：当前 section（立即）
+   2. 相邻：下一个 section（load 后）
+   3. 全部：剩余 section（idle 时逐步）
+   ========================================================== */
 const preloadedSections = new Set();
 function preloadSection(sid) {
   if (!sid || preloadedSections.has(sid)) return;
@@ -1751,6 +1756,16 @@ function preloadAround(sid) {
   if (i < 0) return;
   preloadSection(SECTION_ORDER[i]);
   preloadSection(SECTION_ORDER[i + 1]);
+}
+function preloadAllInIdle() {
+  const run = function() {
+    SECTION_ORDER.forEach(sid => preloadSection(sid));
+  };
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(run, { timeout: 4000 });
+  } else {
+    setTimeout(run, 3000);
+  }
 }
 
 function renderSections() {
@@ -1839,7 +1854,6 @@ let focusSectionId = null;
 let focusPlantIndex = 0;
 let focusImgIndex = 0;
 let focusOverlay = null;
-let isHistoryPushed = false;
 
 let isZooming = false;
 let zoomOverlay = null;
@@ -1848,6 +1862,39 @@ let zoomX = 0, zoomY = 0;
 let zoomDragging = false;
 let zoomDragStartX = 0, zoomDragStartY = 0;
 let zoomBaseX = 0, zoomBaseY = 0;
+
+/* ==========================================================
+   History 状态管理（解决手机返回键大退问题）
+   - 页面加载时：replaceState 基线态
+   - 打开浮层：pushState 一层
+   - popstate：
+     * 如果浮层打开 → 关闭浮层（不真正回退）
+     * 否则 → 跳回 index3 的书本屏
+   ========================================================== */
+const HISTORY_BASE_KEY = 'plant-base';
+const HISTORY_FOCUS_KEY = 'plant-focus';
+
+// 初始基线
+history.replaceState({ view: HISTORY_BASE_KEY }, '', location.href);
+
+window.addEventListener('popstate', function(e) {
+  if (isFocused) {
+    // 用户在浮层打开时按了返回：关闭浮层，并重新 push 基线态
+    actuallyExitFocus();
+    // 立即 pushState 一层基线，防止接下来再按返回就大退
+    history.pushState({ view: HISTORY_BASE_KEY }, '', location.href);
+    return;
+  }
+
+  // 用户在主页按了返回：回 index3 的书本屏
+  if (!isZooming) {
+    goBackToIndex3();
+  }
+});
+
+function goBackToIndex3() {
+  window.location.href = 'index3.html#library-section';
+}
 
 /* ==================== 页内 Toast ==================== */
 function showToast(text, options) {
@@ -2086,8 +2133,8 @@ function createFocusOverlay() {
   document.body.appendChild(overlay);
   focusOverlay = overlay;
 
-  overlay.querySelector('.focus-backdrop').addEventListener('click', exitFocus);
-  overlay.querySelector('.focus-close').addEventListener('click', exitFocus);
+  overlay.querySelector('.focus-backdrop').addEventListener('click', closeFocusAndHistory);
+  overlay.querySelector('.focus-close').addEventListener('click', closeFocusAndHistory);
 
   overlay.querySelector('.focus-prev').addEventListener('click', function (e) { e.stopPropagation(); navFocusImage(-1); });
   overlay.querySelector('.focus-next').addEventListener('click', function (e) { e.stopPropagation(); navFocusImage(1); });
@@ -2096,12 +2143,15 @@ function createFocusOverlay() {
 
   const focusImageEl = overlay.querySelector('.focus-image');
   if (isTouchDevice) {
+    // 手机端：单击图片放大；同时支持左右滑动手势切换图片
     focusImageEl.addEventListener('click', function(e) {
+      if (isImageSwiped) { isImageSwiped = false; return; }
       if (e.target.tagName === 'IMG') {
         e.preventDefault(); e.stopPropagation();
         openZoom();
       }
     });
+    setupFocusSwipe(focusImageEl);
   } else {
     focusImageEl.addEventListener('dblclick', function (e) {
       e.preventDefault(); e.stopPropagation(); openZoom();
@@ -2109,6 +2159,39 @@ function createFocusOverlay() {
   }
 
   return overlay;
+}
+
+// 手机端左右滑动切换图片
+let isImageSwiped = false;
+function setupFocusSwipe(el) {
+  let startX = 0, startY = 0, moved = false;
+  el.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    moved = false;
+    isImageSwiped = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', function(e) {
+    if (e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      moved = true;
+      isImageSwiped = true;
+    }
+  }, { passive: true });
+  el.addEventListener('touchend', function(e) {
+    if (!moved) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - startX;
+    if (dx > 50) {
+      navFocusImage(-1);
+    } else if (dx < -50) {
+      navFocusImage(1);
+    }
+    setTimeout(function() { isImageSwiped = false; }, 350);
+  }, { passive: true });
 }
 
 function preloadPlantImages(plant) {
@@ -2205,13 +2288,18 @@ function enterFocus(sectionId, plantIndex) {
     if (closeBtn) closeBtn.focus();
   }, 100);
 
-  if (!isHistoryPushed) {
-    history.pushState({ focus: true }, '', location.href);
-    isHistoryPushed = true;
-  }
+  // 打开浮层时 pushState 一层，为返回键做准备
+  history.pushState({ view: HISTORY_FOCUS_KEY }, '', location.href);
 }
 
-function exitFocus() {
+// 用户点关闭按钮/遮罩：触发 popstate 路径关闭（不再单独处理）
+function closeFocusAndHistory() {
+  if (!isFocused) return;
+  history.back(); // 触发 popstate → actuallyExitFocus
+}
+
+// 真正执行关闭（由 popstate 触发）
+function actuallyExitFocus() {
   if (!isFocused) return;
   if (isZooming) closeZoom();
   isFocused = false;
@@ -2227,18 +2315,7 @@ function exitFocus() {
     try { lastFocusedElement.focus(); } catch (e) {}
     lastFocusedElement = null;
   }
-
-  if (isHistoryPushed) {
-    history.back();
-    isHistoryPushed = false;
-  }
 }
-
-window.addEventListener('popstate', function(e) {
-  if (isFocused) {
-    exitFocus();
-  }
-});
 
 function navFocusImage(delta) {
   if (!focusSectionId) return;
@@ -2427,7 +2504,7 @@ document.addEventListener('keydown', function (e) {
     return;
   }
   if (!isFocused) return;
-  if (e.key === 'Escape') exitFocus();
+  if (e.key === 'Escape') closeFocusAndHistory();
   else if (e.key === 'ArrowLeft') { e.preventDefault(); navFocusImage(-1); }
   else if (e.key === 'ArrowRight') { e.preventDefault(); navFocusImage(1); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); navFocusPlant(-1); }
@@ -2526,6 +2603,8 @@ function boot() {
   currentSeason = detectSeason();
   preloadAround(currentSeason);
   setTimeout(function () { startAutoPlay(currentSeason); }, 800);
+  // 空闲时全量预加载，用户滑动时不再等图片
+  preloadAllInIdle();
 }
 if (document.readyState === 'complete') boot();
 else window.addEventListener('load', boot);
@@ -2734,7 +2813,7 @@ aiClearBtn.addEventListener('click', async () => {
 });
 
 /* ==========================================================
-   聊天记录：跨页兼容（index3 存 HTML，plant 存 JSON）
+   聊天记录：跨页兼容
    ========================================================== */
 function saveChatHistory() {
   try {
@@ -2770,7 +2849,6 @@ function loadChatHistory() {
   const saved = localStorage.getItem('mangroveChatHistory');
   if (!saved) return;
 
-  // 格式1：JSON 数组（新版）
   if (saved.charAt(0) === '[') {
     try {
       const arr = JSON.parse(saved);
@@ -2781,7 +2859,6 @@ function loadChatHistory() {
     } catch (e) {}
   }
 
-  // 格式2：HTML 字符串（index3 旧版）——用 DOMParser 安全解析，避免 XSS
   if (saved.indexOf('ai-message') >= 0 || saved.charAt(0) === '<') {
     try {
       const parser = new DOMParser();
@@ -2797,14 +2874,12 @@ function loadChatHistory() {
       });
       if (arr.length > 0) {
         renderChatMessages(arr);
-        // 自动转换为新格式存储，下次读取就快了
         saveChatHistory();
         return;
       }
     } catch (e) {}
   }
 
-  // 都读不了就清掉
   try { localStorage.removeItem('mangroveChatHistory'); } catch (e) {}
 }
 
