@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>红树林水下世界 · 鱼类分区</title>
+
+<link rel="preload" as="image" href="fish/Uca arcuata1.jpg">
+
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background: #021a2a; color: #e6f7ff; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; overflow-x: hidden; cursor: none; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
@@ -20,6 +23,7 @@ a, button { cursor: none; }
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   transition: transform 0.3s ease, background 0.3s;
   display: flex; align-items: center; gap: 8px; font-family: inherit;
+  text-decoration: none;
 }
 
 /* ==================== 自定义水波纹光标 ==================== */
@@ -51,15 +55,17 @@ a, button { cursor: none; }
   100% { width: 90px; height: 90px; opacity: 0; border-width: 1px; }
 }
 
-/* ==================== 触摸设备隐藏光标 ==================== */
 @media (hover: none), (pointer: coarse) {
   body, a, button, .back-home-btn, .species-item, .ai-text-btn, .upload-area, .main-img { cursor: auto !important; }
   .cursor-core, .cursor-ripple-el { display: none !important; }
 }
 
-/* ==================== 第一屏滚动区 ==================== */
-.scroll-container { height:300vh; position:relative; }
-.sticky-view { position:sticky; top:0; height:100vh; height:100dvh; overflow:hidden; display:flex; justify-content:center; align-items:center; }
+/* ==================== 第一屏 ==================== */
+.scroll-container { height: 100vh; height: 100dvh; position:relative; }
+.sticky-view {
+  position:relative; width:100%; height:100%;
+  overflow:hidden; display:flex; justify-content:center; align-items:center;
+}
 .bg-image {
   position:absolute; top:0; left:0; width:100%; height:100%;
   background: url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=2000&auto=format&fit=crop') no-repeat center center/cover;
@@ -74,16 +80,34 @@ a, button { cursor: none; }
   z-index:2; pointer-events:none; animation: glowShift 8s ease-in-out infinite alternate;
 }
 @keyframes glowShift { 0% { opacity: 0.7; } 100% { opacity: 1; } }
+
 .vignette-overlay {
   position:absolute; top:0; left:0; width:100%; height:100%;
-  background: radial-gradient(ellipse 70% 60% at center, rgba(255,255,255,0.25) 0%, rgba(180,240,255,0.3) 30%, rgba(20,60,90,0.55) 70%, rgba(2,26,42,0.9) 100%);
+  background: radial-gradient(ellipse 70% 60% at center,
+    rgba(255,255,255,0.25) 0%,
+    rgba(180,240,255,0.3) 30%,
+    rgba(20,60,90,0.5) 70%,
+    rgba(2,26,42,0.6) 100%);
   z-index:3; pointer-events:none;
 }
-.transition-overlay {
-  position:absolute; top:0; left:0; width:100%; height:100%;
-  background: linear-gradient(180deg, rgba(126,200,227,0) 0%, rgba(126,200,227,0.4) 50%, #7ec8e3 100%);
-  z-index: 4; pointer-events:none; opacity: 0; transition: opacity 0.15s ease-out;
+
+.hero-bottom-fade {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 55vh;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    rgba(126, 200, 227, 0.04) 18%,
+    rgba(126, 200, 227, 0.12) 35%,
+    rgba(126, 200, 227, 0.28) 52%,
+    rgba(126, 200, 227, 0.52) 68%,
+    rgba(126, 200, 227, 0.78) 82%,
+    rgba(126, 200, 227, 0.94) 93%,
+    #7ec8e3 100%);
+  z-index: 4;
+  pointer-events: none;
 }
+
 .particles { position:absolute; inset:0; z-index:5; pointer-events:none; overflow:hidden; }
 .particle {
   position:absolute; border-radius:50%;
@@ -98,7 +122,18 @@ a, button { cursor: none; }
   90% { opacity: 0.8; }
   100% { transform: translateY(-10vh) translateX(-10px) scale(1.3); opacity: 0; }
 }
-.text-layer { position:absolute; z-index:6; text-align:center; width:90%; max-width:800px; transition: opacity 0.8s ease, transform 0.8s ease; }
+
+.text-layer {
+  position:absolute; z-index:6;
+  text-align:center; width:90%; max-width:800px;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: textFadeIn 1.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards;
+}
+@keyframes textFadeIn {
+  0% { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
 .text-layer h1 {
   font-size: 4rem; letter-spacing: 8px; margin-bottom: 22px; color: #e6f7ff; font-weight: 300;
   text-shadow: 0 0 20px rgba(0,212,255,0.9), 0 0 40px rgba(0,212,255,0.7), 0 0 70px rgba(0,180,255,0.5), 0 2px 8px rgba(0,0,0,0.6);
@@ -108,8 +143,6 @@ a, button { cursor: none; }
   text-shadow: 0 0 14px rgba(0,212,255,0.8), 0 0 28px rgba(0,150,220,0.6), 0 1px 4px rgba(0,0,0,0.7);
   max-width: 620px; margin: 0 auto; letter-spacing: 1px;
 }
-#text-1 { opacity:1; transform:translateY(0); }
-#text-2 { opacity:0; transform:translateY(30px); }
 
 /* ==================== 深海区 ==================== */
 .ocean-section {
@@ -144,18 +177,30 @@ a, button { cursor: none; }
 .env-dot.temp { background: #ff9e6d; box-shadow: 0 0 8px rgba(255,158,109,0.6); }
 .env-dot.salt { background: #7fffd4; box-shadow: 0 0 8px rgba(127,255,212,0.6); }
 
-.layer-content { display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px; align-items: start; }
+.layer-content {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 60px;
+  align-items: start;
+}
 
 .layer-hero {
-  position: sticky; top: 100px; border-radius: 20px; overflow: hidden;
+  position: sticky; top: 100px;
+  border-radius: 20px; overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(0, 212, 255, 0.25);
-  background: rgba(0, 30, 50, 0.4); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  background: rgba(0, 30, 50, 0.4);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: flex; flex-direction: column;
 }
 .layer-hero img {
-  width: 100%; height: 380px; object-fit: contain;
+  width: 100%; height: 420px;
+  object-fit: contain;
+  object-position: center center;
   background: linear-gradient(135deg, rgba(0,61,92,0.6), rgba(2,26,42,0.8));
-  padding: 20px; display: block;
+  padding: 20px;
+  display: block;
+  margin: 0 auto;
   transition: opacity 0.35s ease, transform 0.35s ease;
 }
 .layer-hero img.switching { opacity: 0.3; transform: scale(0.97); }
@@ -211,14 +256,14 @@ a, button { cursor: none; }
   background: linear-gradient(to right, transparent, rgba(0,212,255,0.4), rgba(127,255,212,0.3), rgba(0,212,255,0.4), transparent);
 }
 
-/* ==================== AI 识图屏（深海主题） ==================== */
+/* ==================== AI 识图屏 ==================== */
 .ai-screen-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   padding: 80px 40px 120px;
   background:
     radial-gradient(circle at 30% 20%, rgba(0,212,255,0.10) 0%, transparent 50%),
@@ -431,13 +476,58 @@ a, button { cursor: none; }
 }
 
 /* ==================== 详情弹窗 ==================== */
-.bird-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 26, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 10001; display: none; justify-content: center; align-items: center; padding: 40px; opacity: 0; transition: opacity 0.4s ease; }
+.bird-modal {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(2, 26, 42, 0.85);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  z-index: 10001; display: none; justify-content: center; align-items: center;
+  padding: 40px; opacity: 0; transition: opacity 0.4s ease;
+}
 .bird-modal.show { display: flex; opacity: 1; }
-.bird-modal-box { width: 100%; max-width: 1200px; height: 85vh; max-height: 720px; background: #0a3d5c; border-radius: 28px; overflow: hidden; display: grid; grid-template-columns: 1.1fr 1fr; box-shadow: 0 40px 100px rgba(0,0,0,0.6); transform: scale(0.95); transition: transform 0.4s cubic-bezier(0.25,1,0.5,1); position: relative; border: 1px solid rgba(0,212,255,0.3); }
+.bird-modal-box {
+  width: 100%; max-width: 1200px; height: 85vh; max-height: 720px;
+  background: #0a3d5c; border-radius: 28px; overflow: hidden;
+  display: grid; grid-template-columns: 1.1fr 1fr;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+  transform: scale(0.95);
+  transition: transform 0.4s cubic-bezier(0.25,1,0.5,1);
+  position: relative; border: 1px solid rgba(0,212,255,0.3);
+}
 .bird-modal.show .bird-modal-box { transform: scale(1); }
-.bird-gallery { position: relative; background: #021a2a; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-.gallery-main { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; cursor: zoom-in; transition: transform 0.5s ease, opacity 0.3s ease; padding: 16px; }
-.gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; background: rgba(0,212,255,0.85); border: none; border-radius: 50%; font-size: 1.4rem; color: #021a2a; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 3; font-weight: bold; }
+
+.bird-gallery {
+  position: relative;
+  background: radial-gradient(circle at center, #06283e 0%, #021a2a 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gallery-main {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  cursor: zoom-in;
+  transition: transform 0.5s ease, opacity 0.3s ease;
+  padding: 24px;
+  display: block;
+  margin: 0 auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.gallery-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 48px; height: 48px;
+  background: rgba(0,212,255,0.85);
+  border: none; border-radius: 50%;
+  font-size: 1.4rem; color: #021a2a;
+  cursor: pointer; display: flex; justify-content: center; align-items: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+  z-index: 3; font-weight: bold;
+}
 .gallery-nav.prev { left: 20px; }
 .gallery-nav.next { right: 20px; }
 .gallery-dots { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
@@ -494,7 +584,7 @@ a, button { cursor: none; }
   font-family: inherit;
 }
 
-/* ==================== AI 潜水员悬浮助手 ==================== */
+/* ==================== AI 悬浮助手 ==================== */
 .ai-assistant-container {
   position: fixed;
   bottom: 100px;
@@ -507,6 +597,15 @@ a, button { cursor: none; }
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+  pointer-events: none;
+}
+.ai-action-row,
+.ai-sprite-box,
+.ai-sprite-btn,
+.ai-text-btn,
+.ai-label,
+.ai-chat-box {
+  pointer-events: auto;
 }
 
 .ai-action-row {
@@ -515,11 +614,18 @@ a, button { cursor: none; }
   gap: 12px;
 }
 
+.ai-sprite-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 .ai-text-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 18px;
+  padding: 11px 22px;
   border-radius: 50px;
   background: rgba(0,212,255,0.15);
   border: 1px solid rgba(0,212,255,0.6);
@@ -661,10 +767,10 @@ a, button { cursor: none; }
   text-shadow: 0 2px 8px rgba(0,0,0,0.8);
   font-weight: 700;
   pointer-events: none;
-  margin-right: 26px;
+  text-align: center;
+  white-space: nowrap;
 }
 
-/* 聊天框 */
 .ai-chat-box, .ai-chat-box *, #ai-input, #ai-send-btn, .ai-close-btn, .ai-message { cursor: auto !important; }
 #ai-input { cursor: text !important; }
 #ai-send-btn, .ai-close-btn, .ai-clear-btn { cursor: pointer !important; }
@@ -686,6 +792,9 @@ a, button { cursor: none; }
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: bottom right;
   pointer-events: none;
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
 }
 .ai-chat-box.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
 
@@ -721,6 +830,7 @@ a, button { cursor: none; }
   .back-home-btn { top: 16px; left: 16px; padding: 9px 18px; font-size: 0.82rem; }
   .text-layer h1 { font-size: 2.6rem; letter-spacing: 5px; }
   .text-layer p { font-size: 0.95rem; }
+  .hero-bottom-fade { height: 48vh; }
 
   .depth-layer { padding: 60px 5% 60px; }
   .layer-header { flex-wrap: wrap; gap: 12px; }
@@ -729,7 +839,7 @@ a, button { cursor: none; }
   .layer-env { margin-left: 0; width: 100%; font-size: 0.78rem; gap: 16px; }
   .layer-content { grid-template-columns: 1fr; gap: 24px; }
   .layer-hero { position: relative; top: 0; }
-  .layer-hero img { height: 220px; }
+  .layer-hero img { height: 260px; padding: 12px; }
   .species-item { padding: 20px; }
   .species-name { font-size: 1.15rem; }
   .species-latin, .species-english { font-size: 0.78rem; }
@@ -738,7 +848,7 @@ a, button { cursor: none; }
   .env-item { font-size: 0.75rem; }
   .species-cold-fact span { font-size: 0.82rem; }
 
-  .ai-screen-content { padding: 80px 20px 100px; }
+  .ai-screen-content { padding: 80px 20px 100px; min-height: auto; }
   .ai-screen-title { font-size: 2rem; letter-spacing: 4px; }
   .ai-screen-subtitle { font-size: 0.85rem; margin-bottom: 24px; padding: 0 10px; }
   .upload-area { height: 160px; padding: 0 16px; }
@@ -754,7 +864,8 @@ a, button { cursor: none; }
   .depth-tick span { font-size: 0.62rem; }
 
   .bird-modal { padding: 15px; }
-  .bird-modal-box { grid-template-columns: 1fr; grid-template-rows: 42% 58%; height: 90vh; }
+  .bird-modal-box { grid-template-columns: 1fr; grid-template-rows: 45% 55%; height: 90vh; }
+  .gallery-main { padding: 12px; }
   .bird-detail { padding: 24px 24px 90px; }
   .bird-detail h3 { font-size: 1.6rem; }
   .bird-modal-footer { width: 100%; padding: 12px 20px; }
@@ -762,25 +873,30 @@ a, button { cursor: none; }
   .bottom-right-group { bottom: 18px; right: 14px; gap: 8px; }
   .icon-btn { width: 42px; height: 42px; font-size: 18px; }
 
-  .ai-assistant-container { bottom: 76px; right: 14px; gap: 6px; }
-  .ai-action-row { gap: 8px; }
+  .ai-assistant-container { bottom: 96px; right: 14px; gap: 6px; }
+  .ai-action-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .ai-sprite-box { order: 1; }
+  .ai-text-btn { order: 2; padding: 10px 18px; font-size: 12px; letter-spacing: 0.08em; }
+
   .ai-sprite-btn { width: 56px; height: 56px; }
   .sprite-snorkel { top: -14px; left: 12px; width: 6px; height: 22px; }
   .sprite-glass-mask { width: 42px; height: 30px; border-radius: 14px; }
   .sprite-eyes { gap: 12px; }
   .eye { width: 10px; height: 10px; }
   .pupil { width: 7px; height: 7px; }
-  .ai-text-btn { padding: 8px 14px; font-size: 0.72rem; letter-spacing: 0.5px; }
-  .ai-label { font-size: 0.62rem; margin-right: 20px; }
+  .ai-label { font-size: 10px; }
 
   .ai-chat-box {
     width: calc(100vw - 28px);
     max-width: 380px;
-    height: 62vh;
-    max-height: 540px;
-    position: fixed;
-    right: 14px;
-    bottom: 148px;
+    height: 58vh;
+    max-height: 500px;
+    right: 0;
+    bottom: calc(100% + 14px);
     border-radius: 18px;
   }
   .ai-chat-header { padding: 12px 16px; font-size: 12px; }
@@ -799,6 +915,7 @@ a, button { cursor: none; }
   .back-home-btn { padding: 8px 14px; font-size: 0.75rem; top: 12px; left: 12px; }
   .text-layer h1 { font-size: 2rem; letter-spacing: 3px; }
   .text-layer p { font-size: 0.85rem; line-height: 1.8; }
+  .hero-bottom-fade { height: 42vh; }
 
   .depth-layer { padding: 50px 16px; }
   .layer-depth-number { font-size: 2rem; }
@@ -814,15 +931,31 @@ a, button { cursor: none; }
   .upload-icon { font-size: 1.8rem; }
   .result-name { font-size: 1.2rem; }
 
-  .ai-chat-box { width: calc(100vw - 20px); height: 65vh; right: 10px; bottom: 140px; }
+  .ai-assistant-container { bottom: 90px; right: 12px; }
   .ai-sprite-btn { width: 50px; height: 50px; }
+  .ai-text-btn { padding: 9px 16px; font-size: 11.5px; }
+  .ai-label { font-size: 9px; }
+  .ai-chat-box { width: calc(100vw - 20px); height: 60vh; max-height: 480px; right: 0; bottom: calc(100% + 12px); }
+
+  .bottom-right-group { bottom: 16px; right: 12px; gap: 8px; }
+  .icon-btn { width: 38px; height: 38px; font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto !important; }
+  .text-layer { opacity: 1 !important; transform: none !important; filter: none !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- 返回按钮 -->
-<button class="back-home-btn" onclick="window.location.href='index3.html#baike-categories'">← 返回</button>
+<!-- 返回按钮：跳回 index3 第三屏（书本屏） -->
+<a href="index3.html#library-section" id="backBtn" class="back-home-btn" aria-label="返回百科">← 返回百科</a>
 
 <div class="cursor-core" id="cursorCore"></div>
 
@@ -841,16 +974,12 @@ a, button { cursor: none; }
     <div class="bg-image"></div>
     <div class="glow-layer"></div>
     <div class="vignette-overlay"></div>
-    <div class="transition-overlay" id="transitionOverlay"></div>
+    <div class="hero-bottom-fade"></div>
     <div class="particles" id="particles"></div>
 
     <div class="text-layer" id="text-1">
       <h1>潜入红树林</h1>
       <p>水面之下，另一个世界正在呼吸。跟随红树林的根系，一起向浅海下潜。</p>
-    </div>
-    <div class="text-layer" id="text-2">
-      <h1>从滩涂到近海</h1>
-      <p>每一层水域，都有独特的居民。它们与红树林，共同书写湛江的蓝色生态。</p>
     </div>
   </div>
 </div>
@@ -870,7 +999,7 @@ a, button { cursor: none; }
     </div>
     <div class="layer-content">
       <div class="layer-hero">
-        <img class="hero-img" id="hero-tidal" src="fish/Uca arcuata1.jpg" alt="弧边招潮蟹">
+        <img class="hero-img" id="hero-tidal" src="fish/Uca arcuata1.jpg" alt="弧边招潮蟹" loading="eager" fetchpriority="high">
         <div class="layer-hero-label">
           <div class="hero-name" id="hero-name-tidal">弧边招潮蟹</div>
           <div class="hero-latin" id="hero-latin-tidal">Uca arcuata</div>
@@ -954,7 +1083,7 @@ a, button { cursor: none; }
     </div>
     <div class="layer-content">
       <div class="layer-hero">
-        <img class="hero-img" id="hero-root" src="fish/Mugil cephalus1.jpg" alt="鲻鱼">
+        <img class="hero-img" id="hero-root" src="fish/Mugil cephalus1.jpg" alt="鲻鱼" loading="lazy" decoding="async">
         <div class="layer-hero-label">
           <div class="hero-name" id="hero-name-root">鲻鱼</div>
           <div class="hero-latin" id="hero-latin-root">Mugil cephalus</div>
@@ -1038,7 +1167,7 @@ a, button { cursor: none; }
     </div>
     <div class="layer-content">
       <div class="layer-hero">
-        <img class="hero-img" id="hero-coastal" src="fish/Trachinotus ovatus1.jpg" alt="卵形鲳鲹">
+        <img class="hero-img" id="hero-coastal" src="fish/Trachinotus ovatus1.jpg" alt="卵形鲳鲹" loading="lazy" decoding="async">
         <div class="layer-hero-label">
           <div class="hero-name" id="hero-name-coastal">卵形鲳鲹</div>
           <div class="hero-latin" id="hero-latin-coastal">Trachinotus ovatus</div>
@@ -1090,7 +1219,6 @@ a, button { cursor: none; }
 
 </section>
 
-<!-- ==================== AI 识图屏（最底层） ==================== -->
 <section class="ai-screen-content" id="screen-ai">
   <h1 class="ai-screen-title">AI 识图助手</h1>
   <p class="ai-screen-subtitle">上传一张红树林生物的照片，AI 将为你识别它</p>
@@ -1117,7 +1245,7 @@ a, button { cursor: none; }
     <button class="modal-close-btn" onclick="closeModal()">✕</button>
     <div class="bird-gallery">
       <div class="zoom-hint">🔍 点击图片放大查看</div>
-      <img class="gallery-main" id="galleryMain" src="" alt="图片" onclick="openLightbox(this.src)">
+      <img class="gallery-main" id="galleryMain" src="" alt="图片" onclick="openLightbox(this.src)" draggable="false">
       <button class="gallery-nav prev" onclick="switchImage(-1)">‹</button>
       <button class="gallery-nav next" onclick="switchImage(1)">›</button>
       <div class="gallery-dots" id="galleryDots"></div>
@@ -1161,22 +1289,24 @@ a, button { cursor: none; }
 <div class="ai-assistant-container" id="ai-assistant-container">
   <div class="ai-action-row">
     <button class="ai-text-btn" id="jump-ai-btn" onclick="goToAIScreen()">一键识图</button>
-    <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
-      <div class="sprite-snorkel"></div>
-      <div class="sprite-glass-mask">
-        <div class="sprite-eyes">
-          <div class="eye"><div class="pupil"></div></div>
-          <div class="eye"><div class="pupil"></div></div>
+    <div class="ai-sprite-box">
+      <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
+        <div class="sprite-snorkel"></div>
+        <div class="sprite-glass-mask">
+          <div class="sprite-eyes">
+            <div class="eye"><div class="pupil"></div></div>
+            <div class="eye"><div class="pupil"></div></div>
+          </div>
         </div>
-      </div>
-      <div class="sprite-bubbles">
-        <span class="bubble b1"></span>
-        <span class="bubble b2"></span>
-        <span class="bubble b3"></span>
-      </div>
-    </button>
+        <div class="sprite-bubbles">
+          <span class="bubble b1"></span>
+          <span class="bubble b2"></span>
+          <span class="bubble b3"></span>
+        </div>
+      </button>
+      <div class="ai-label">AI 聊天助手</div>
+    </div>
   </div>
-  <div class="ai-label">AI 聊天助手</div>
 
   <div class="ai-chat-box" id="ai-chat-box">
     <div class="ai-chat-header">
@@ -1205,7 +1335,24 @@ a, button { cursor: none; }
 <script>
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-/* ==================== 数据 ==================== */
+/* ==================== 返回 index3 第三屏逻辑 ====================
+   1. a[href="#library-section"] 是标准锚点跳转
+   2. 额外用 sessionStorage 记录跳转意图，防止 index3 因 scrollRestoration
+      或其它 JS 逻辑忽略锚点
+   3. index3 里需要配合（如还没加）：
+      if (sessionStorage.getItem('mangroveJumpTo') === 'library-section') {
+        sessionStorage.removeItem('mangroveJumpTo');
+        setTimeout(function() {
+          var lib = document.getElementById('library-section');
+          if (lib) window.scrollTo({ top: lib.offsetTop, behavior: 'auto' });
+        }, 80);
+      }
+   ========================================================== */
+document.getElementById('backBtn').addEventListener('click', function() {
+  try { sessionStorage.setItem('mangroveJumpTo', 'library-section'); } catch (e) {}
+  // href="index3.html#library-section" 会由浏览器处理跳转，无需 preventDefault
+});
+
 const depthData = {
   tidal: {
     species: [
@@ -1254,7 +1401,7 @@ const depthData = {
         images: ['fish/Trachinotus ovatus1.jpg', 'fish/Trachinotus ovatus2.jpg'] },
       { tag: '🐟 近海区 · 石斑',
         name: '斜带石斑鱼', latin: 'Epinephelus coioides', english: 'Orange-spotted Grouper',
-        desc: '俗称青斑。是近海的高级食用鱼，喜躲在礁石和沉船附近伏击猎物。湛江海域有多种石斑鱼分布，栖息水深通常在10-50米。最适水温22-28°C。',
+        desc: '俗称青斑。是近海的高级食用鱼，喜躲在礁石和沉船附近伏击猎物。湛江海域有多种石斑鱼分布，栖息水深通常在10-50米。最适水温22-28℃。',
         coldFact: '石斑鱼是“性别转换高手”，很多石斑鱼小时候是雌性，长大后变成雄性。它们还会变色伪装，是海底的“变色龙”。',
         images: ['fish/Epinephelus coioides1.jpg', 'fish/Epinephelus coioides2.jpg'] }
     ]
@@ -1279,7 +1426,7 @@ if (!isTouchDevice) {
 
   document.addEventListener('mouseover', (e) => {
     const t = e.target;
-    if (t.closest('button, a, .species-item, .layer-hero, .back-home-btn, .gallery-nav, .switch-btn, .ai-float-btn, .ai-text-btn, .upload-area')) {
+    if (t.closest && t.closest('button, a, .species-item, .layer-hero, .back-home-btn, .gallery-nav, .switch-btn, .ai-float-btn, .ai-text-btn, .upload-area, .modal-close-btn, .lightbox-close, .lightbox-toolbar button')) {
       cursorCore.classList.add('hover');
     } else {
       cursorCore.classList.remove('hover');
@@ -1317,8 +1464,7 @@ function createRipple(x, y) {
   }
 })();
 
-/* ==================== 滚动 + 过渡 + 深度刻度 ==================== */
-const transitionOverlay = document.getElementById('transitionOverlay');
+/* ==================== 深度刻度尺 ==================== */
 const depthScale = document.getElementById('depthScale');
 const depthMarker = document.getElementById('depthMarker');
 let detailOpen = false;
@@ -1341,33 +1487,14 @@ function updateDepthScale() {
   }
 }
 
+let scrollRafPending = false;
 window.addEventListener('scroll', () => {
-  const container = document.getElementById('scrollContainer');
-  if (!container) return;
-  const rect = container.getBoundingClientRect();
-  const scrollTop = -rect.top;
-  const scrollHeight = rect.height - window.innerHeight;
-  let progress = scrollTop / scrollHeight;
-  if (progress < 0) progress = 0;
-  if (progress > 1) progress = 1;
-
-  const t1 = document.getElementById('text-1');
-  const t2 = document.getElementById('text-2');
-  if (progress < 0.4) {
-    t1.style.opacity = 1 - progress * 2.5;
-    t1.style.transform = `translateY(-${progress * 70}px) scale(${1 - progress * 0.1})`;
-    t2.style.opacity = 0;
-  } else if (progress >= 0.4 && progress < 0.75) {
-    t1.style.opacity = 0;
-    let p2 = (progress - 0.4) / 0.35;
-    t2.style.opacity = p2;
-    t2.style.transform = `translateY(${30 - p2 * 30}px) scale(${0.95 + p2 * 0.05})`;
-  } else {
-    t2.style.opacity = 1 - (progress - 0.75) / 0.25;
-  }
-
-  transitionOverlay.style.opacity = Math.max(0, (progress - 0.6) / 0.4);
-  updateDepthScale();
+  if (scrollRafPending) return;
+  scrollRafPending = true;
+  requestAnimationFrame(() => {
+    updateDepthScale();
+    scrollRafPending = false;
+  });
 }, { passive: true });
 
 /* ==================== 深度层动画 ==================== */
@@ -1585,17 +1712,14 @@ const aiSendBtn = document.getElementById('ai-send-btn');
 const aiMessages = document.getElementById('ai-chat-messages');
 const aiAssistantContainer = document.getElementById('ai-assistant-container');
 
-const P1 = "66de7713c55546bab9822a2d92a9957b";
-const P2 = ".2elQ1xVUQSwCapqb";
-const API_KEY = P1 + P2;
-
+const API_KEY = "66de7713c55546bab9822a2d92a9957b" + ".2elQ1xVUQSwCapqb";
 const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 const MODEL = "glm-5.3-flash";
 
 let isAILoading = false;
 
 let chatHistory = [
-    { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你只回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。" }
+    { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你主要回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。回答尽量简洁（150字内）。" }
 ];
 
 const pupils = document.querySelectorAll('.pupil');
@@ -1721,7 +1845,7 @@ aiClearBtn.addEventListener('click', () => {
     if (confirm('确定要清空所有的聊天记录吗？')) {
         localStorage.removeItem('mangroveChatHistory');
         chatHistory = [
-            { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你只回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。" }
+            { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你主要回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。回答尽量简洁（150字内）。" }
         ];
         aiMessages.innerHTML = '<div class="ai-message ai-message-bot">你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。</div>';
         saveChatHistory();
@@ -1729,20 +1853,71 @@ aiClearBtn.addEventListener('click', () => {
 });
 
 function saveChatHistory() {
-    const clone = aiMessages.cloneNode(true);
-    const loadingElements = clone.querySelectorAll('.ai-message-loading');
-    loadingElements.forEach(el => el.remove());
-    localStorage.setItem('mangroveChatHistory', clone.innerHTML);
+    try {
+        const msgs = aiMessages.querySelectorAll('.ai-message');
+        const arr = [];
+        msgs.forEach(function(m) {
+            if (m.classList.contains('ai-message-loading')) return;
+            const role = m.classList.contains('ai-message-user') ? 'user' : 'bot';
+            const text = (m.textContent || '').trim();
+            if (!text) return;
+            arr.push({ role: role, text: text });
+        });
+        if (arr.length > 60) arr = arr.slice(-60);
+        localStorage.setItem('mangroveChatHistory', JSON.stringify(arr));
+    } catch (e) {}
+}
+
+function renderChatMessages(arr) {
+    aiMessages.innerHTML = '';
+    arr.forEach(function(m) {
+        if (!m || typeof m.text !== 'string') return;
+        const text = m.text.trim();
+        if (!text) return;
+        const msg = document.createElement('div');
+        msg.className = 'ai-message ai-message-' + (m.role === 'user' ? 'user' : 'bot');
+        msg.textContent = text;
+        aiMessages.appendChild(msg);
+    });
+    aiMessages.scrollTop = aiMessages.scrollHeight;
 }
 
 function loadChatHistory() {
     const saved = localStorage.getItem('mangroveChatHistory');
-    if (saved) {
-        aiMessages.innerHTML = saved;
-        const loadingElements = aiMessages.querySelectorAll('.ai-message-loading');
-        loadingElements.forEach(el => el.remove());
-        aiMessages.scrollTop = aiMessages.scrollHeight;
+    if (!saved) return;
+
+    if (saved.charAt(0) === '[') {
+        try {
+            const arr = JSON.parse(saved);
+            if (Array.isArray(arr) && arr.length > 0) {
+                renderChatMessages(arr);
+                return;
+            }
+        } catch (e) {}
     }
+
+    if (saved.indexOf('ai-message') >= 0 || saved.charAt(0) === '<') {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(saved, 'text/html');
+            const msgs = doc.querySelectorAll('.ai-message');
+            const arr = [];
+            msgs.forEach(function(m) {
+                if (m.classList.contains('ai-message-loading')) return;
+                const role = m.classList.contains('ai-message-user') ? 'user' : 'bot';
+                const text = (m.textContent || '').trim();
+                if (!text) return;
+                arr.push({ role: role, text: text });
+            });
+            if (arr.length > 0) {
+                renderChatMessages(arr);
+                saveChatHistory();
+                return;
+            }
+        } catch (e) {}
+    }
+
+    try { localStorage.removeItem('mangroveChatHistory'); } catch (e) {}
 }
 
 loadChatHistory();
@@ -1775,7 +1950,9 @@ async function sendAIMessage() {
             },
             body: JSON.stringify({
                 model: MODEL,
-                messages: chatHistory
+                messages: chatHistory,
+                max_tokens: 400,
+                temperature: 0.7
             })
         });
 
@@ -1813,16 +1990,18 @@ function appendMessage(role, text) {
 }
 
 aiSendBtn.addEventListener('click', sendAIMessage);
-// ==================== 跳转到 AI 识图屏 ====================
-function goToAIScreen() {
-  const aiScreen = document.getElementById('screen-ai');
-  if (aiScreen) {
-    aiScreen.scrollIntoView({ behavior: 'smooth' });
-  }
-}
 aiInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendAIMessage();
 });
+
+function goToAIScreen() {
+  const aiScreen = document.getElementById('screen-ai');
+  if (aiScreen) {
+    closeChat();
+    aiScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+window.goToAIScreen = goToAIScreen;
 
 /* ==================== 图像识别逻辑 ==================== */
 const fileInput = document.getElementById('file-input');
@@ -1882,6 +2061,7 @@ function cancelRecognition() {
     hideLoading();
     uploadArea.style.display = 'flex';
 }
+window.cancelRecognition = cancelRecognition;
 
 function hideLoading() {
     loadingSpinner.style.display = 'none';
@@ -1958,7 +2138,7 @@ async function callVisionAPI(base64Data) {
 
 然后**严格按照以下格式回答**（每项一行，不要省略任何一项）：
 
-【名称】此生物最可能的中文名（必须给出具体名称）
+【名称】此生物最可能的中文名（必须给出具体名称，如"弹涂鱼"或"弧边招潮蟹"，不要用"鱼"这种笼统称呼）
 【学名】拉丁学名
 【特征】外形特征描述（50字左右）
 【习性】生活习性与食性（50字左右）
@@ -1976,7 +2156,7 @@ async function callVisionAPI(base64Data) {
         hideLoading();
         uploadArea.style.display = 'flex';
         showResult("识别超时了，可能是因为网络较慢。请换一张图片或稍后重试。", true);
-    }, 60000);
+    }, 90000);
 
     try {
         const response = await fetch(API_URL, {
@@ -1986,7 +2166,9 @@ async function callVisionAPI(base64Data) {
                 'Authorization': `Bearer ${API_KEY}`
             },
             body: JSON.stringify({
-                model: "glm-5.3-flash",
+                model: "glm-4v-plus",
+                reasoning_effort: "low",
+                max_tokens: 500,
                 messages: [
                     {
                         role: "user",
@@ -2051,24 +2233,58 @@ function renderResult(text) {
     const habit = getField('习性');
     const fact = getField('冷知识');
 
+    resultInner.innerHTML = '';
     if (name) {
-        let html = '';
-        html += `<div class="result-name">${name}</div>`;
-        if (latin) html += `<div class="result-latin">${latin}</div>`;
-        if (feature) html += `<div class="result-item"><div class="result-item-title">◆ 特征描述</div><div class="result-item-content">${feature}</div></div>`;
-        if (habit) html += `<div class="result-item"><div class="result-item-title">◆ 生活习性</div><div class="result-item-content">${habit}</div></div>`;
-        if (fact) html += `<div class="result-item"><div class="result-item-title">◆ 冷知识</div><div class="result-item-content">${fact}</div></div>`;
-        resultInner.innerHTML = html;
+        const nameEl = document.createElement('div');
+        nameEl.className = 'result-name';
+        nameEl.textContent = name;
+        resultInner.appendChild(nameEl);
+
+        if (latin) {
+            const latinEl = document.createElement('div');
+            latinEl.className = 'result-latin';
+            latinEl.textContent = latin;
+            resultInner.appendChild(latinEl);
+        }
+
+        const items = [
+            { title: '◆ 特征描述', content: feature },
+            { title: '◆ 生活习性', content: habit },
+            { title: '◆ 冷知识', content: fact }
+        ];
+        items.forEach(function(it) {
+            if (!it.content) return;
+            const wrap = document.createElement('div');
+            wrap.className = 'result-item';
+            const title = document.createElement('div');
+            title.className = 'result-item-title';
+            title.textContent = it.title;
+            const content = document.createElement('div');
+            content.className = 'result-item-content';
+            content.textContent = it.content;
+            wrap.appendChild(title);
+            wrap.appendChild(content);
+            resultInner.appendChild(wrap);
+        });
     } else {
-        resultInner.innerHTML = `<div class="result-raw">${text.replace(/\n/g, '<br>')}</div>`;
+        const raw = document.createElement('div');
+        raw.className = 'result-raw';
+        raw.textContent = text;
+        resultInner.appendChild(raw);
     }
 }
 
-function showResult(text, isError = false) {
+function showResult(text, isError) {
     uploadArea.style.display = 'flex';
     resultBox.classList.add('show');
-    resultInner.innerHTML = `<div class="result-raw" style="${isError ? 'color: #ff8a8a;' : ''}">${text.replace(/\n/g, '<br>')}</div>`;
+    resultInner.innerHTML = '';
+    const raw = document.createElement('div');
+    raw.className = 'result-raw';
+    if (isError) raw.style.color = '#ff8a8a';
+    raw.textContent = text;
+    resultInner.appendChild(raw);
 }
+
 </script>
 </body>
 </html>
