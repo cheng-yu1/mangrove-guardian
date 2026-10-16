@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>红树林微距 · 虫类画廊</title>
+
+<!-- 7 张画廊图预加载，横向滚动不白屏 -->
+<link rel="preload" as="image" href="bug/01.jpg">
+<link rel="preload" as="image" href="bug/02.jpg">
+<link rel="preload" as="image" href="bug/03.jpg">
+<link rel="preload" as="image" href="bug/04.jpg">
+<link rel="preload" as="image" href="bug/05.jpg">
+<link rel="preload" as="image" href="bug/06.jpg">
+<link rel="preload" as="image" href="bug/07.jpg">
+
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body {
@@ -12,29 +22,62 @@ html, body {
   color: #f0f5e8;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   overflow: hidden;
-  cursor: none;
+  cursor: auto;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
 }
-a, button { cursor: none; }
+
+/* 只有 JS 成功启用自定义光标后才隐藏系统光标 */
+body.custom-cursor-on,
+body.custom-cursor-on a,
+body.custom-cursor-on button,
+body.custom-cursor-on .main-img,
+body.custom-cursor-on .progress-dot,
+body.custom-cursor-on .back-home-btn,
+body.custom-cursor-on .icon-btn,
+body.custom-cursor-on .ai-sprite-btn,
+body.custom-cursor-on .ai-text-btn,
+body.custom-cursor-on .upload-area {
+  cursor: none;
+}
+
+/* ==================== SVG 图标系统 ==================== */
+.svg-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
 /* ==================== 返回按钮 ==================== */
 .back-home-btn {
   position: fixed; top: 24px; left: 24px;
   z-index: 999999;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: rgba(255,255,255,0.9);
   color: #0a3d1c;
-  border: none; padding: 12px 26px;
+  border: none;
+  padding: 12px 26px;
   border-radius: 50px;
-  font-size: 0.95rem; font-weight: bold; letter-spacing: 1px;
-  cursor: none;
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s;
-  display: flex; align-items: center; gap: 8px;
   font-family: inherit;
+  text-decoration: none;
 }
+.back-home-btn svg { width: 15px; height: 15px; }
 
 /* ==================== 自定义光标 ==================== */
 .cursor-core {
@@ -44,7 +87,8 @@ a, button { cursor: none; }
   border-radius: 50%;
   background: radial-gradient(circle, #ffffff, #ffd966);
   box-shadow: 0 0 12px rgba(255,217,102,0.9);
-  transform: translate(-50%, -50%);
+  transform: translate3d(0,0,0) translate(-50%, -50%);
+  will-change: transform;
   transition: width 0.2s, height 0.2s;
 }
 .cursor-core.hover { width: 16px; height: 16px; }
@@ -70,9 +114,26 @@ a, button { cursor: none; }
   100% { width: 90px; height: 90px; opacity: 0; border-width: 1px; }
 }
 
-/* ==================== 触摸设备：隐藏自定义光标 ==================== */
-@media (hover: none) and (pointer: coarse) {
-  body, a, button, .main-img, .upload-area, .ai-text-btn { cursor: auto !important; }
+/* ==================== 环境粒子画布 ==================== */
+#ambient-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 90;
+  /* 图片之上、卡片信息之上，进度条 / 音乐 / AI 助手之下 */
+}
+
+/* 触摸设备 + reduced-motion：隐藏自定义光标 */
+@media (hover: none), (pointer: coarse) {
+  body, body.custom-cursor-on,
+  body.custom-cursor-on a, body.custom-cursor-on button { cursor: auto !important; }
+  .cursor-core, .cursor-ripple-el { display: none !important; }
+  a, button { cursor: pointer !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body, body.custom-cursor-on { cursor: auto !important; }
   .cursor-core, .cursor-ripple-el { display: none !important; }
 }
 
@@ -197,6 +258,9 @@ a, button { cursor: none; }
   height: 100%;
   overflow: hidden;
 }
+
+/* 图片：鼠标跟随位移用 translate3d(var(--tx), var(--ty))
+   Ken Burns 用独立的 scale 属性，两者不冲突 */
 .card-screen .main-img {
   position: absolute;
   inset: 0;
@@ -207,14 +271,17 @@ a, button { cursor: none; }
   display: block;
   cursor: zoom-in;
   z-index: 1;
+  transform: translate3d(var(--tx, 0px), var(--ty, 0px), 0);
+  will-change: transform, scale;
   animation: imgSlowZoom 20s ease-in-out infinite alternate;
   user-select: none;
   -webkit-user-drag: none;
 }
 @keyframes imgSlowZoom {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.06); }
+  0% { scale: 1; }
+  100% { scale: 1.06; }
 }
+
 .card-screen::after {
   content: '';
   position: absolute;
@@ -276,19 +343,31 @@ a, button { cursor: none; }
   margin-bottom: 12px;
 }
 .card-info .cold-fact {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   background: rgba(255,217,102,0.1);
   border-left: 3px solid #ffd966;
   padding: 10px 16px;
   border-radius: 0 10px 10px 0;
 }
+.card-info .cold-fact .cold-icon {
+  flex-shrink: 0;
+  width: 14px; height: 14px;
+  color: #ffd966;
+  margin-top: 2px;
+}
+.card-info .cold-fact .cold-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 .card-info .cold-fact strong {
   color: #ffd966;
   font-size: 0.68rem;
   letter-spacing: 3px;
-  display: block;
-  margin-bottom: 3px;
   font-family: 'Courier New', monospace;
+  font-weight: 600;
 }
 .card-info .cold-fact span {
   color: #e0f0d0;
@@ -315,7 +394,7 @@ a, button { cursor: none; }
   margin-left: auto;
 }
 
-/* ==================== AI 识图屏（最底层） ==================== */
+/* ==================== AI 识图屏 ==================== */
 .ai-screen-content {
   display: flex;
   flex-direction: column;
@@ -376,8 +455,17 @@ a, button { cursor: none; }
   overflow: hidden;
   z-index: 3;
 }
+.upload-area:focus-visible {
+  outline: 2px solid #ffd966;
+  outline-offset: 4px;
+}
+.upload-area:hover {
+  border-color: #ffd966;
+  background: rgba(255,217,102,0.12);
+}
 .upload-icon {
-  font-size: 3rem;
+  width: 48px; height: 48px;
+  color: #ffd966;
   margin-bottom: 16px;
   filter: drop-shadow(0 0 10px rgba(255,217,102,0.8));
 }
@@ -535,7 +623,8 @@ a, button { cursor: none; }
   background: rgba(255,217,102,0.2);
   border: 1px solid rgba(255,217,102,0.4);
   transition: all 0.4s ease;
-  cursor: none;
+  cursor: pointer;
+  padding: 0;
 }
 .progress-dot.active {
   background: #ffd966;
@@ -627,13 +716,13 @@ a, button { cursor: none; }
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 217, 102, 0.5);
   color: #ffd966;
-  font-size: clamp(18px, 1.6vw, 24px);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.5s ease;
   box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   font-family: inherit;
 }
+.icon-btn svg { width: 22px; height: 22px; }
 
 /* ==================== AI 助手 ==================== */
 .ai-assistant-container {
@@ -648,41 +737,67 @@ a, button { cursor: none; }
   user-select: none;
   -webkit-user-select: none;
   touch-action: none;
+  pointer-events: none;
+}
+.ai-action-row,
+.ai-sprite-box,
+.ai-sprite-btn,
+.ai-text-btn,
+.ai-label,
+.ai-chat-box {
+  pointer-events: auto;
 }
 
+/* 桌面端：一键识图在左，精灵盒在右 */
 .ai-action-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
 }
 
+/* 精灵 + label 的居中容器 */
+.ai-sprite-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 一键识图按钮：金色描边 + 深绿底，明显可见 */
 .ai-text-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 18px;
+  padding: 10px 20px;
   border-radius: 50px;
   background: rgba(255, 217, 102, 0.15);
-  border: 1px solid rgba(255, 217, 102, 0.6);
+  border: 1px solid rgba(255, 217, 102, 0.7);
   color: #ffd966;
   font-size: 13px;
   font-weight: bold;
-  letter-spacing: 0.1em;
-  cursor: none;
+  letter-spacing: 0.12em;
+  cursor: pointer;
   white-space: nowrap;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 0;
   visibility: hidden;
   transform: translateX(20px);
   pointer-events: none;
-  box-shadow: 0 0 15px rgba(255, 217, 102, 0.2);
+  box-shadow: 0 0 20px rgba(255, 217, 102, 0.25), 0 4px 15px rgba(0,0,0,0.4);
   font-family: inherit;
+  text-indent: 0.12em;
 }
 .ai-text-btn.show {
   opacity: 1;
   visibility: visible;
   transform: translateX(0);
   pointer-events: auto;
+}
+.ai-text-btn:hover {
+  background: rgba(255, 217, 102, 0.28);
+  box-shadow: 0 0 35px rgba(255, 217, 102, 0.55), 0 6px 20px rgba(0,0,0,0.5);
+  transform: translateY(-2px);
+  border-color: #ffd966;
 }
 
 .ai-sprite-btn {
@@ -702,6 +817,10 @@ a, button { cursor: none; }
   padding: 0;
   outline: none !important;
   font-family: inherit;
+}
+.ai-sprite-btn:hover {
+  transform: scale(1.1) translateY(-3px);
+  box-shadow: 0 0 45px rgba(255, 217, 102, 0.85), inset 0 0 25px rgba(200, 255, 180, 0.5);
 }
 
 .sprite-wings {
@@ -768,15 +887,16 @@ a, button { cursor: none; }
   100% { transform: scale(1.1) translateY(-5px); }
 }
 
+/* label：文本居中于精灵下方，无 margin 偏移 */
 .ai-label {
   font-size: 11px;
   color: #ffd966;
   letter-spacing: 0.1em;
   text-shadow: 0 2px 8px rgba(0,0,0,0.8);
   font-weight: 700;
-  transition: color 0.3s;
   pointer-events: none;
-  margin-right: 26px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* ==================== 聊天框 ==================== */
@@ -785,6 +905,9 @@ a, button { cursor: none; }
 #ai-send-btn, .ai-close-btn, .ai-clear-btn { cursor: pointer !important; }
 
 .ai-chat-box {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
   width: 340px; height: 480px;
   background: rgba(6, 18, 8, 0.95);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -795,7 +918,10 @@ a, button { cursor: none; }
   opacity: 0; visibility: hidden;
   transform: translateY(20px) scale(0.95);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-origin: bottom right; pointer-events: none;
+  transform-origin: bottom right;
+  pointer-events: none;
+  resize: both;
+  min-width: 280px; min-height: 380px;
 }
 .ai-chat-box.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
 .ai-chat-header {
@@ -806,7 +932,16 @@ a, button { cursor: none; }
   flex-shrink: 0;
 }
 .ai-close-btn { background: none; border: none; color: #f0f5e8; font-size: 20px; opacity: 0.8; transition: opacity 0.3s; padding: 5px 10px; z-index: 999; position: relative; font-family: inherit; }
-.ai-clear-btn { background: none; border: none; color: rgba(240, 245, 232, 0.6); font-size: 14px; margin-right: 8px; transition: color 0.3s; font-family: inherit; }
+.ai-clear-btn {
+  background: none; border: none;
+  color: rgba(240, 245, 232, 0.6);
+  font-size: 14px; margin-right: 8px;
+  transition: color 0.3s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+}
+.ai-clear-btn svg { width: 14px; height: 14px; }
 .ai-chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
 .ai-message { max-width: 85%; padding: 10px 14px; border-radius: 14px; font-size: 13px; line-height: 1.6; letter-spacing: 0.05em; word-break: break-word; }
 .ai-message-bot { align-self: flex-start; background: rgba(255, 217, 102, 0.1); color: #c8e0ee; border: 1px solid rgba(255, 217, 102, 0.2); border-bottom-left-radius: 4px; }
@@ -818,8 +953,66 @@ a, button { cursor: none; }
 #ai-input::placeholder { color: rgba(240, 245, 232, 0.3); }
 #ai-send-btn { padding: 0 18px; background: rgba(255, 217, 102, 0.3); border: 1px solid rgba(255, 217, 102, 0.6); border-radius: 30px; color: #f0f5e8; font-size: 12px; font-weight: 500; transition: all 0.3s; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
 
+/* ==================== 页内 Toast ==================== */
+.toast-container {
+  position: fixed;
+  top: 24px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 100001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: calc(100vw - 40px);
+}
+.toast {
+  background: rgba(6, 18, 8, 0.96);
+  color: #e8f2ea;
+  border: 1px solid rgba(255, 217, 102, 0.4);
+  border-radius: 14px;
+  padding: 12px 22px;
+  font-size: 13.5px;
+  letter-spacing: 0.03em;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 440px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast svg { flex-shrink: 0; width: 18px; height: 18px; color: #ffd966; }
+.toast.is-warning { border-color: rgba(255, 190, 110, 0.5); color: #ffe8c5; }
+.toast.is-error { border-color: rgba(255, 130, 130, 0.5); color: #ffd5d5; }
+.toast-confirm-wrap { display: flex; gap: 10px; margin-left: auto; pointer-events: auto; }
+.toast-confirm-btn {
+  border: none; background: rgba(255, 217, 102, 0.2);
+  color: #ffd966;
+  font-family: inherit; font-size: 12.5px;
+  padding: 6px 14px; border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.toast-confirm-btn:hover { background: rgba(255, 217, 102, 0.35); }
+.toast-cancel-btn {
+  border: none; background: transparent;
+  color: rgba(232, 242, 234, 0.6);
+  font-family: inherit; font-size: 12.5px;
+  padding: 6px 14px; border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.toast-cancel-btn:hover { color: #fff; }
+
 /* ==================== 移动端适配 ==================== */
 @media (max-width: 900px) {
+  * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+
   .back-home-btn {
     top: 16px; left: 16px;
     padding: 9px 18px;
@@ -859,7 +1052,7 @@ a, button { cursor: none; }
   .ai-screen-title { font-size: 2rem; letter-spacing: 5px; margin-bottom: 10px; }
   .ai-screen-subtitle { font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 24px; padding: 0 10px; }
   .upload-area { height: 160px; border-radius: 16px; padding: 0 16px; }
-  .upload-icon { font-size: 2.2rem; margin-bottom: 10px; }
+  .upload-icon { width: 38px; height: 38px; margin-bottom: 10px; }
   .upload-text { font-size: 0.95rem; letter-spacing: 1px; }
   .upload-hint { font-size: 0.72rem; margin-top: 6px; }
 
@@ -888,19 +1081,32 @@ a, button { cursor: none; }
     right: 16px;
     gap: 10px;
   }
-  .icon-btn { width: 42px; height: 42px; font-size: 18px; }
+  .icon-btn { width: 42px; height: 42px; }
+  .icon-btn svg { width: 18px; height: 18px; }
 
+  /* ============ 手机端 AI 助手：垂直排列 ============ */
   .ai-assistant-container {
-    bottom: 76px;
+    bottom: 84px;
     right: 14px;
     gap: 6px;
+    align-items: center;
   }
-  .ai-action-row { gap: 8px; }
 
-  .ai-sprite-btn {
-    width: 56px;
-    height: 56px;
+  /* 手机端改为纵向：精灵在上，一键识图在下 */
+  .ai-action-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
+  .ai-sprite-box { order: 1; }
+  .ai-text-btn {
+    order: 2;
+    padding: 9px 16px;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  .ai-sprite-btn { width: 56px; height: 56px; }
   .sprite-wings { width: 72px; height: 48px; }
   .wing { width: 28px; height: 36px; }
   .wing.left { left: 8px; }
@@ -913,26 +1119,19 @@ a, button { cursor: none; }
   .eye { width: 10px; height: 10px; }
   .pupil { width: 7px; height: 7px; }
 
-  .ai-text-btn {
-    padding: 8px 14px;
-    font-size: 0.72rem;
-    letter-spacing: 0.5px;
-  }
-  .ai-label {
-    font-size: 0.62rem;
-    margin-right: 20px;
-    letter-spacing: 0.05em;
-  }
+  .ai-label { font-size: 0.62rem; letter-spacing: 0.05em; }
 
+  /* 手机端聊天框：浮在 AI 助手容器上方 */
   .ai-chat-box {
     width: calc(100vw - 28px);
     max-width: 380px;
-    height: 62vh;
-    max-height: 540px;
-    position: fixed;
-    right: 14px;
-    bottom: 148px;
+    height: 58vh;
+    max-height: 500px;
+    right: 0;
+    bottom: calc(100% + 14px);
+    position: absolute;
     border-radius: 18px;
+    resize: none;
   }
   .ai-chat-header { padding: 12px 16px; font-size: 12px; letter-spacing: 0.1em; }
   .ai-chat-messages { padding: 12px; gap: 10px; }
@@ -970,7 +1169,7 @@ a, button { cursor: none; }
   .ai-screen-title { font-size: 1.7rem; letter-spacing: 3px; }
   .ai-screen-subtitle { font-size: 0.78rem; }
   .upload-area { height: 140px; }
-  .upload-icon { font-size: 1.8rem; }
+  .upload-icon { width: 34px; height: 34px; }
   .upload-text { font-size: 0.85rem; }
   .upload-hint { font-size: 0.66rem; }
 
@@ -978,29 +1177,48 @@ a, button { cursor: none; }
   .result-name { font-size: 1.2rem; }
   .result-item-content { font-size: 0.8rem; }
 
-  .ai-chat-box {
-    width: calc(100vw - 20px);
-    height: 65vh;
-    right: 10px;
-    bottom: 140px;
-  }
+  .ai-assistant-container { bottom: 78px; right: 12px; }
+  .ai-chat-box { height: 60vh; max-height: 480px; }
 
   .progress-bar { width: 130px; }
 }
 
 /* 触摸设备禁用 hover 特效 */
 @media (hover: none) and (pointer: coarse) {
-  .ai-sprite-btn:hover { transform: none; box-shadow: 0 0 25px rgba(255, 217, 102, 0.4), inset 0 0 15px rgba(200, 255, 180, 0.3); }
-  .back-home-btn:hover { background: rgba(255,255,255,0.9); transform: none; }
+  .ai-sprite-btn:hover { transform: none; }
+  .back-home-btn:hover { transform: none; }
+  .icon-btn:hover { transform: none; }
+  .progress-dot:hover { transform: none; }
+}
+
+/* 减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto !important; }
+  .intro-bg { animation: none !important; }
+  .firefly { animation: none !important; opacity: 0; }
+  .card-screen .main-img {
+    animation: none !important;
+    transform: none !important;
+  }
+  #ambient-canvas { display: none !important; }
 }
 </style>
 </head>
 <body>
 
-<button class="back-home-btn" onclick="window.location.href='index3.html#baike-categories'">← 返回</button>
+<a href="index3.html#library-section" class="back-home-btn" aria-label="返回百科">
+  <svg viewBox="0 0 24 24" class="svg-icon"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+  返回
+</a>
 <div class="cursor-core" id="cursorCore"></div>
+<canvas id="ambient-canvas" aria-hidden="true"></canvas>
 
-<div class="horizontal-scroll" id="horizontalScroll">
+<div class="horizontal-scroll" id="horizontalScroll" tabindex="0" aria-label="横向画廊，左右滑动切换">
 
   <!-- 开场屏 -->
   <section class="screen intro-screen">
@@ -1016,7 +1234,7 @@ a, button { cursor: none; }
 
   <!-- 01 玉带凤蝶 -->
   <section class="screen card-screen">
-    <img class="main-img" src="bug/01.jpg" alt="玉带凤蝶" onclick="openLightbox(this.src)">
+    <img class="main-img" src="bug/01.jpg" alt="玉带凤蝶" loading="eager" fetchpriority="high" onclick="openLightbox(this.src)">
     <div class="card-number">01 / 07</div>
     <div class="card-info">
       <h3>玉带凤蝶</h3>
@@ -1024,15 +1242,21 @@ a, button { cursor: none; }
       <p class="english">Common Mormon</p>
       <p class="desc">玉带凤蝶是红树林最常见的大型凤蝶之一。黑色的翅膀上，一排白色斑纹横贯而下，像一条玉带，优雅而庄重。</p>
       <div class="cold-fact">
-        <strong>✦ 冷知识</strong>
-        <span>玉带凤蝶的雌蝶会模仿有毒的红珠凤蝶——这种"借别人的毒名保护自己"的策略，在生物学上叫"贝氏拟态"。</span>
+        <svg class="cold-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+        </svg>
+        <div class="cold-text">
+          <strong>冷知识</strong>
+          <span>玉带凤蝶的雌蝶会模仿有毒的红珠凤蝶——这种"借别人的毒名保护自己"的策略，在生物学上叫"贝氏拟态"。</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 02 蓝点紫斑蝶 -->
   <section class="screen card-screen">
-    <img class="main-img" src="bug/02.jpg" alt="蓝点紫斑蝶" onclick="openLightbox(this.src)">
+    <img class="main-img" src="bug/02.jpg" alt="蓝点紫斑蝶" loading="lazy" decoding="async" onclick="openLightbox(this.src)">
     <div class="card-number">02 / 07</div>
     <div class="card-info">
       <h3>蓝点紫斑蝶</h3>
@@ -1040,15 +1264,21 @@ a, button { cursor: none; }
       <p class="english">Blue-spotted Crow</p>
       <p class="desc">蓝点紫斑蝶的翅膀在阳光下泛着神秘的蓝紫色光泽。华南地区的紫斑蝶会集体越冬，湛江的暖冬正是它们喜爱的栖息地。</p>
       <div class="cold-fact">
-        <strong>✦ 冷知识</strong>
-        <span>紫斑蝶是"越冬迁徙"的蝴蝶。每年冬天，成千上万只聚在同一个山谷里挤在一起取暖，如同蝴蝶版的"冬日营帐"。</span>
+        <svg class="cold-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+        </svg>
+        <div class="cold-text">
+          <strong>冷知识</strong>
+          <span>紫斑蝶是"越冬迁徙"的蝴蝶。每年冬天，成千上万只聚在同一个山谷里挤在一起取暖，如同蝴蝶版的"冬日营帐"。</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 03 虎斑蝶 -->
   <section class="screen card-screen">
-    <img class="main-img" src="bug/03.jpg" alt="虎斑蝶" onclick="openLightbox(this.src)">
+    <img class="main-img" src="bug/03.jpg" alt="虎斑蝶" loading="lazy" decoding="async" onclick="openLightbox(this.src)">
     <div class="card-number">03 / 07</div>
     <div class="card-info">
       <h3>虎斑蝶</h3>
@@ -1056,15 +1286,21 @@ a, button { cursor: none; }
       <p class="english">Common Tiger</p>
       <p class="desc">虎斑蝶黑橙相间的翅膀，像老虎的斑纹，是红树林里最具视觉冲击力的蝴蝶之一。它飞得慢，却毫不畏惧天敌。</p>
       <div class="cold-fact">
-        <strong>✦ 冷知识</strong>
-        <span>虎斑蝶的幼虫吃有毒的萝藦科植物，把毒素储存在体内。成虫后，这身毒衣让鸟儿敬而远之——漂亮的警戒色就是这么来的。</span>
+        <svg class="cold-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+        </svg>
+        <div class="cold-text">
+          <strong>冷知识</strong>
+          <span>虎斑蝶的幼虫吃有毒的萝藦科植物，把毒素储存在体内。成虫后，这身毒衣让鸟儿敬而远之——漂亮的警戒色就是这么来的。</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 04 迁粉蝶 -->
   <section class="screen card-screen">
-    <img class="main-img" src="bug/04.jpg" alt="迁粉蝶" onclick="openLightbox(this.src)">
+    <img class="main-img" src="bug/04.jpg" alt="迁粉蝶" loading="lazy" decoding="async" onclick="openLightbox(this.src)">
     <div class="card-number">04 / 07</div>
     <div class="card-info">
       <h3>迁粉蝶</h3>
@@ -1072,15 +1308,21 @@ a, button { cursor: none; }
       <p class="english">Common Emigrant</p>
       <p class="desc">迁粉蝶因具迁徙习性而得名。在湛江红树林间，常能看到成群的迁粉蝶贴着树冠飞行，像一页页被风吹动的纸片。</p>
       <div class="cold-fact">
-        <strong>✦ 冷知识</strong>
-        <span>蝴蝶翅膀的颜色，一半来自色素，一半来自鳞片的微观结构。结构色会随角度变化，这就是为什么有的蝴蝶越看越闪。</span>
+        <svg class="cold-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+        </svg>
+        <div class="cold-text">
+          <strong>冷知识</strong>
+          <span>蝴蝶翅膀的颜色，一半来自色素，一半来自鳞片的微观结构。结构色会随角度变化，这就是为什么有的蝴蝶越看越闪。</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 05 碧伟蜓 -->
   <section class="screen card-screen">
-    <img class="main-img" src="bug/05.jpg" alt="碧伟蜓" onclick="openLightbox(this.src)">
+    <img class="main-img" src="bug/05.jpg" alt="碧伟蜓" loading="lazy" decoding="async" onclick="openLightbox(this.src)">
     <div class="card-number">05 / 07</div>
     <div class="card-info">
       <h3>碧伟蜓</h3>
@@ -1088,15 +1330,21 @@ a, button { cursor: none; }
       <p class="english">Lesser Emperor</p>
       <p class="desc">碧伟蜓是红树林水面上最常见的大型蜻蜓。它通体碧蓝，飞行迅疾，是空中捕虫的顶级猎手。</p>
       <div class="cold-fact">
-        <strong>✦ 冷知识</strong>
-        <span>蜻蜓的翅膀可以独立控制，能悬停、倒退、急转弯。它的复眼由近3万个小眼组成，视野几乎360度无死角。</span>
+        <svg class="cold-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+        </svg>
+        <div class="cold-text">
+          <strong>冷知识</strong>
+          <span>蜻蜓的翅膀可以独立控制，能悬停、倒退、急转弯。它的复眼由近3万个小眼组成，视野几乎360度无死角。</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 06 中华大刀螳 -->
   <section class="screen card-screen">
-    <img class="main-img" src="bug/06.jpg" alt="中华大刀螳" onclick="openLightbox(this.src)">
+    <img class="main-img" src="bug/06.jpg" alt="中华大刀螳" loading="lazy" decoding="async" onclick="openLightbox(this.src)">
     <div class="card-number">06 / 07</div>
     <div class="card-info">
       <h3>中华大刀螳</h3>
@@ -1104,15 +1352,21 @@ a, button { cursor: none; }
       <p class="english">Chinese Mantis</p>
       <p class="desc">中华大刀螳常伏在红树林的枝条上，一动不动地等待猎物靠近。它的前足如刀刃，出击时快如闪电。</p>
       <div class="cold-fact">
-        <strong>✦ 冷知识</strong>
-        <span>螳螂的头部可以180度旋转，是昆虫中唯一能"回头看"的。它的复眼还能感知3D影像，锁定猎物的距离。</span>
+        <svg class="cold-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+        </svg>
+        <div class="cold-text">
+          <strong>冷知识</strong>
+          <span>螳螂的头部可以180度旋转，是昆虫中唯一能"回头看"的。它的复眼还能感知3D影像，锁定猎物的距离。</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 07 斑络新妇 -->
   <section class="screen card-screen">
-    <img class="main-img" src="bug/07.jpg" alt="斑络新妇" onclick="openLightbox(this.src)">
+    <img class="main-img" src="bug/07.jpg" alt="斑络新妇" loading="lazy" decoding="async" onclick="openLightbox(this.src)">
     <div class="card-number">07 / 07</div>
     <div class="card-info">
       <h3>斑络新妇</h3>
@@ -1120,28 +1374,37 @@ a, button { cursor: none; }
       <p class="english">Giant Wood Spider</p>
       <p class="desc">斑络新妇是红树林里最大的结网蜘蛛。雌蛛体型可达5厘米，会织出直径超过一米的巨大金网，悬在树间如同一面锦旗。</p>
       <div class="cold-fact">
-        <strong>✦ 冷知识</strong>
-        <span>斑络新妇的蛛丝在阳光下泛着金色。研究表明，这种金色能反射紫外线，反而更容易吸引昆虫撞上来——漂亮的陷阱。</span>
+        <svg class="cold-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <path d="M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>
+        </svg>
+        <div class="cold-text">
+          <strong>冷知识</strong>
+          <span>斑络新妇的蛛丝在阳光下泛着金色。研究表明，这种金色能反射紫外线，反而更容易吸引昆虫撞上来——漂亮的陷阱。</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 08 AI 识图（最底层） -->
+  <!-- 08 AI 识图 -->
   <section class="screen" id="screen-ai">
     <div class="ai-screen-content">
       <h1 class="ai-screen-title">AI 识图助手</h1>
       <p class="ai-screen-subtitle">上传一张红树林生物的照片，AI 将为你识别它</p>
-      
+
       <input type="file" id="file-input" accept="image/*" hidden>
-      <div class="upload-area" id="upload-area">
-        <div class="upload-icon">📷</div>
+      <div class="upload-area" id="upload-area" tabindex="0" role="button" aria-label="上传图片">
+        <svg class="upload-icon svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 7a2 2 0 0 1 2-2h3l1.5-2h7L18 5h3a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <circle cx="12" cy="13" r="3.5"/>
+        </svg>
         <div class="upload-text">点击上传图片 或 拖拽到此处</div>
         <div class="upload-hint">支持 JPG / PNG，大小不超过 5MB</div>
       </div>
 
       <div class="loading-spinner" id="loading-spinner"></div>
       <div class="loading-text" id="loading-text">AI 深度思考中，正在识别物种…</div>
-      <div class="loading-tip" id="loading-tip">💡 模型推理需要 10-30 秒，请耐心等待</div>
+      <div class="loading-tip" id="loading-tip">模型推理需要 10-30 秒，请耐心等待</div>
       <button class="cancel-btn" id="cancel-btn" onclick="cancelRecognition()">取消识别，重新上传</button>
 
       <div class="ai-result-box" id="ai-result-box">
@@ -1152,16 +1415,16 @@ a, button { cursor: none; }
 
 </div>
 
-<div class="progress-dots" id="progressDots">
-  <div class="progress-dot active" data-index="0"></div>
-  <div class="progress-dot" data-index="1"></div>
-  <div class="progress-dot" data-index="2"></div>
-  <div class="progress-dot" data-index="3"></div>
-  <div class="progress-dot" data-index="4"></div>
-  <div class="progress-dot" data-index="5"></div>
-  <div class="progress-dot" data-index="6"></div>
-  <div class="progress-dot" data-index="7"></div>
-  <div class="progress-dot" data-index="8"></div>
+<div class="progress-dots" id="progressDots" role="tablist" aria-label="页面进度">
+  <button class="progress-dot active" data-index="0" aria-label="开场" type="button"></button>
+  <button class="progress-dot" data-index="1" aria-label="玉带凤蝶" type="button"></button>
+  <button class="progress-dot" data-index="2" aria-label="蓝点紫斑蝶" type="button"></button>
+  <button class="progress-dot" data-index="3" aria-label="虎斑蝶" type="button"></button>
+  <button class="progress-dot" data-index="4" aria-label="迁粉蝶" type="button"></button>
+  <button class="progress-dot" data-index="5" aria-label="碧伟蜓" type="button"></button>
+  <button class="progress-dot" data-index="6" aria-label="中华大刀螳" type="button"></button>
+  <button class="progress-dot" data-index="7" aria-label="斑络新妇" type="button"></button>
+  <button class="progress-dot" data-index="8" aria-label="AI 识图" type="button"></button>
 </div>
 
 <div class="progress-bar" id="progressBar">
@@ -1170,387 +1433,514 @@ a, button { cursor: none; }
 </div>
 
 <div class="lightbox" id="lightbox">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-close" onclick="closeLightbox()" aria-label="关闭">✕</button>
   <img id="lightboxImg" src="" alt="大图" draggable="false">
 </div>
 
 <div class="bottom-right-group">
-    <button class="icon-btn" id="sound-toggle" onclick="toggleSound(event)">🔇</button>
+  <button class="icon-btn" id="sound-toggle" onclick="toggleSound(event)" aria-label="音乐开关">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" id="sound-icon">
+      <path d="M11 5L6 9H2v6h4l5 4z"/>
+      <path d="M22 9l-6 6M16 9l6 6"/>
+    </svg>
+  </button>
 </div>
 
+<!-- AI 助手：sprite-box 保证 label 居中于精灵 -->
 <div class="ai-assistant-container" id="ai-assistant-container">
-    <div class="ai-action-row">
-        <button class="ai-text-btn" id="jump-ai-btn" onclick="goToAIScreen()">一键识图</button>
-        <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
-            <div class="sprite-antennae">
-                <div class="antenna left"></div>
-                <div class="antenna right"></div>
-            </div>
-            <div class="sprite-wings">
-                <div class="wing left"></div>
-                <div class="wing right"></div>
-            </div>
-            <div class="sprite-eyes">
-                <div class="eye"><div class="pupil"></div></div>
-                <div class="eye"><div class="pupil"></div></div>
-            </div>
-        </button>
+  <div class="ai-action-row">
+    <button class="ai-text-btn" id="jump-ai-btn" onclick="goToAIScreen()">一键识图</button>
+    <div class="ai-sprite-box">
+      <button class="ai-float-btn ai-sprite-btn" id="ai-float-btn" aria-label="AI精灵">
+        <div class="sprite-antennae">
+          <div class="antenna left"></div>
+          <div class="antenna right"></div>
+        </div>
+        <div class="sprite-wings">
+          <div class="wing left"></div>
+          <div class="wing right"></div>
+        </div>
+        <div class="sprite-eyes">
+          <div class="eye"><div class="pupil"></div></div>
+          <div class="eye"><div class="pupil"></div></div>
+        </div>
+      </button>
+      <div class="ai-label">AI 聊天助手</div>
     </div>
-    <div class="ai-label">AI 聊天助手</div>
+  </div>
 
-    <div class="ai-chat-box" id="ai-chat-box">
-        <div class="ai-chat-header">
-            <span>红树林 AI 智能导游</span>
-            <div>
-                <button class="ai-clear-btn" id="ai-clear-btn" title="清空聊天记录">🗑️</button>
-                <button class="ai-close-btn" id="ai-close-btn">✕</button>
-            </div>
-        </div>
-        <div class="ai-chat-messages" id="ai-chat-messages">
-            <div class="ai-message ai-message-bot">
-                你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。
-            </div>
-        </div>
-        <div class="ai-chat-input-area">
-            <input type="text" id="ai-input" placeholder="输入问题，比如：弹涂鱼为什么能上岸？" autocomplete="off">
-            <button id="ai-send-btn">发送</button>
-        </div>
+  <div class="ai-chat-box" id="ai-chat-box">
+    <div class="ai-chat-header">
+      <span>红树林 AI 智能导游</span>
+      <div>
+        <button class="ai-clear-btn" id="ai-clear-btn" title="清空聊天记录" aria-label="清空聊天记录">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+          </svg>
+        </button>
+        <button class="ai-close-btn" id="ai-close-btn" aria-label="关闭">✕</button>
+      </div>
     </div>
+    <div class="ai-chat-messages" id="ai-chat-messages">
+      <div class="ai-message ai-message-bot">
+        你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。
+      </div>
+    </div>
+    <div class="ai-chat-input-area">
+      <input type="text" id="ai-input" placeholder="输入问题，比如：弹涂鱼为什么能上岸？" autocomplete="off">
+      <button id="ai-send-btn">发送</button>
+    </div>
+  </div>
 </div>
 
 <audio id="bgm" loop preload="auto">
-    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=calm-nature-113679.mp3" type="audio/mpeg">
+  <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=calm-nature-113679.mp3" type="audio/mpeg">
 </audio>
 
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
 <script>
-// ==================== 触摸设备检测 ====================
-const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+(function() {
+  'use strict';
 
-// ==================== 光标 ====================
-const cursorCore = document.getElementById('cursorCore');
-let mx = 0, my = 0, lastRippleTime = 0, rippleToggle = false;
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-if (!isTouchDevice) {
-  document.addEventListener('mousemove', (e) => {
-    mx = e.clientX; my = e.clientY;
-    cursorCore.style.left = mx + 'px';
-    cursorCore.style.top = my + 'px';
-    const now = Date.now();
-    if (now - lastRippleTime > 70) {
-      lastRippleTime = now;
-      createRipple(mx, my);
+  /* ==================== SVG 图标 ==================== */
+  const ICONS = {
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>',
+    warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.7L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0z"/><path d="M12 9v4"/><circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none"/></svg>',
+    soundOn: '<path d="M11 5L6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/>',
+    soundOff: '<path d="M11 5L6 9H2v6h4l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/>'
+  };
+
+  /* ==================== 光标（降级安全） ==================== */
+  const cursorCore = document.getElementById('cursorCore');
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  let customCursorOn = false;
+  let lastRippleTime = 0, rippleToggle = false;
+
+  if (!isTouchDevice && !prefersReducedMotion) {
+    try {
+      document.addEventListener('mousemove', function(e) {
+        mx = e.clientX; my = e.clientY;
+      }, { passive: true });
+
+      (function animateCursor() {
+        if (document.hidden) { requestAnimationFrame(animateCursor); return; }
+        const dx = mx - cx;
+        const dy = my - cy;
+        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
+          cx += dx * 0.6;
+          cy += dy * 0.6;
+          cursorCore.style.transform = 'translate3d(' + cx + 'px,' + cy + 'px,0) translate(-50%,-50%)';
+
+          const now = Date.now();
+          if (now - lastRippleTime > 90) {
+            lastRippleTime = now;
+            createRipple(mx, my);
+          }
+        }
+        requestAnimationFrame(animateCursor);
+      })();
+
+      document.addEventListener('mouseover', function(e) {
+        const t = e.target;
+        if (t.closest && t.closest('button, a, .back-home-btn, .progress-dot, .main-img, .ai-float-btn, .upload-area, .ai-text-btn')) {
+          cursorCore.classList.add('hover');
+        } else {
+          cursorCore.classList.remove('hover');
+        }
+      }, { passive: true });
+
+      document.body.classList.add('custom-cursor-on');
+      customCursorOn = true;
+    } catch (err) {
+      customCursorOn = false;
     }
-  });
-
-  document.addEventListener('mouseover', (e) => {
-    const t = e.target;
-    if (t.closest('button, a, .back-home-btn, .progress-dot, .main-img, .ai-float-btn, .upload-area, .ai-text-btn')) {
-      cursorCore.classList.add('hover');
-    } else {
-      cursorCore.classList.remove('hover');
-    }
-  });
-} else {
-  cursorCore.style.display = 'none';
-}
-
-function createRipple(x, y) {
-  const r = document.createElement('div');
-  r.className = 'cursor-ripple-el' + (rippleToggle ? ' alt' : '');
-  rippleToggle = !rippleToggle;
-  r.style.left = x + 'px';
-  r.style.top = y + 'px';
-  document.body.appendChild(r);
-  setTimeout(() => {
-    if (r.parentNode) r.parentNode.removeChild(r);
-  }, 950);
-}
-
-(function initFireflies() {
-  const c = document.getElementById('fireflies');
-  if (!c) return;
-  for (let i = 0; i < 40; i++) {
-    const f = document.createElement('div');
-    f.className = 'firefly';
-    f.style.left = Math.random() * 100 + '%';
-    f.style.top = (60 + Math.random() * 40) + '%';
-    f.style.animationDuration = (Math.random() * 8 + 6) + 's';
-    f.style.animationDelay = Math.random() * 8 + 's';
-    f.style.transform = `scale(${Math.random() * 1.5 + 0.6})`;
-    c.appendChild(f);
   }
-})();
+  if (!customCursorOn) {
+    cursorCore.style.display = 'none';
+  }
 
-// ==================== 横向滑动逻辑 ====================
-const container = document.getElementById('horizontalScroll');
-const screens = document.querySelectorAll('.screen');
-const dots = document.querySelectorAll('.progress-dot');
-const progressFill = document.getElementById('progressFill');
-const progressText = document.getElementById('progressText');
-const totalScreens = screens.length; 
-let currentIndex = 0;
-let isAnimating = false;
+  // 涟漪上限保护，避免快速移动时 DOM 堆积
+  let rippleCount = 0;
+  function createRipple(x, y) {
+    if (rippleCount > 6) return;
+    const r = document.createElement('div');
+    r.className = 'cursor-ripple-el' + (rippleToggle ? ' alt' : '');
+    rippleToggle = !rippleToggle;
+    r.style.left = x + 'px';
+    r.style.top = y + 'px';
+    document.body.appendChild(r);
+    rippleCount++;
+    setTimeout(function() {
+      if (r.parentNode) r.parentNode.removeChild(r);
+      rippleCount--;
+    }, 950);
+  }
 
-// 桌面端滚轮
-if (!isTouchDevice) {
-  container.addEventListener('wheel', (e) => {
-    if (e.target.closest('.ai-result-box')) {
+  /* ==================== 萤火虫 ==================== */
+  (function initFireflies() {
+    if (prefersReducedMotion) return;
+    const c = document.getElementById('fireflies');
+    if (!c) return;
+    for (let i = 0; i < 40; i++) {
+      const f = document.createElement('div');
+      f.className = 'firefly';
+      f.style.left = Math.random() * 100 + '%';
+      f.style.top = (60 + Math.random() * 40) + '%';
+      f.style.animationDuration = (Math.random() * 8 + 6) + 's';
+      f.style.animationDelay = Math.random() * 8 + 's';
+      f.style.transform = 'scale(' + (Math.random() * 1.5 + 0.6) + ')';
+      c.appendChild(f);
+    }
+  })();
+
+  /* ==================== Toast ==================== */
+  function showToast(text, options) {
+    options = options || {};
+    const container = document.getElementById('toast-container');
+    const el = document.createElement('div');
+    el.className = 'toast' + (options.type === 'error' ? ' is-error' : options.type === 'warning' ? ' is-warning' : '');
+    el.setAttribute('role', 'status');
+
+    const icon = options.type === 'warning' ? ICONS.warning : ICONS.info;
+    let html = '<span aria-hidden="true">' + icon + '</span><span>' + text + '</span>';
+
+    if (options.confirm) {
+      html += '<span class="toast-confirm-wrap">' +
+        '<button class="toast-confirm-btn" type="button">' + (options.confirmText || '确定') + '</button>' +
+        '<button class="toast-cancel-btn" type="button">' + (options.cancelText || '取消') + '</button>' +
+        '</span>';
+    }
+    el.innerHTML = html;
+
+    container.appendChild(el);
+    requestAnimationFrame(function() { el.classList.add('show'); });
+
+    function dismiss() {
+      el.classList.remove('show');
+      setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 350);
+    }
+
+    if (options.confirm) {
+      return new Promise(function(resolve) {
+        el.querySelector('.toast-confirm-btn').addEventListener('click', function() { dismiss(); resolve(true); });
+        el.querySelector('.toast-cancel-btn').addEventListener('click', function() { dismiss(); resolve(false); });
+      });
+    } else {
+      setTimeout(dismiss, options.duration || 3000);
+      return null;
+    }
+  }
+
+  /* ==================== 横向滑动 ==================== */
+  const container = document.getElementById('horizontalScroll');
+  const screens = document.querySelectorAll('.screen');
+  const dots = document.querySelectorAll('.progress-dot');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const totalScreens = screens.length;
+  let currentIndex = 0;
+  let isAnimating = false;
+
+  // 桌面端滚轮：带例外出口，不劫持输入框/结果框/聊天框
+  if (!isTouchDevice) {
+    container.addEventListener('wheel', function(e) {
+      if (e.target.closest && e.target.closest('.ai-result-box, .ai-chat-box, input, textarea, .ai-chat-messages')) {
+        return;
+      }
+      e.preventDefault();
+      if (isAnimating) return;
+      const direction = e.deltaY > 0 ? 1 : -1;
+      const nextIndex = currentIndex + direction;
+      if (nextIndex < 0 || nextIndex >= totalScreens) return;
+      isAnimating = true;
+      currentIndex = nextIndex;
+      container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+      updateProgress();
+      setTimeout(function() { isAnimating = false; }, 700);
+    }, { passive: false });
+
+    // 桌面端拖拽
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartScrollLeft = 0;
+
+    container.addEventListener('mousedown', function(e) {
+      if (e.target.closest('.ai-result-box, .ai-chat-box, input, textarea')) return;
+      isDragging = true;
+      dragStartX = e.pageX;
+      dragStartScrollLeft = container.scrollLeft;
+      container.style.scrollSnapType = 'none';
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      const deltaX = e.pageX - dragStartX;
+      container.scrollLeft = dragStartScrollLeft - deltaX;
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      container.style.scrollSnapType = 'x mandatory';
+      const idx = Math.round(container.scrollLeft / window.innerWidth);
+      currentIndex = Math.max(0, Math.min(totalScreens - 1, idx));
+      container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+      updateProgress();
+    });
+  }
+
+  // 手机端 scroll 事件同步索引
+  container.addEventListener('scroll', function() {
+    const idx = Math.round(container.scrollLeft / window.innerWidth);
+    if (idx !== currentIndex) {
+      currentIndex = idx;
+      updateProgress();
+    }
+  }, { passive: true });
+
+  function updateProgress() {
+    dots.forEach(function(d, i) { d.classList.toggle('active', i === currentIndex); });
+    const p = currentIndex / (totalScreens - 1);
+    progressFill.style.width = (p * 100) + '%';
+    if (currentIndex === 0) {
+      progressText.textContent = '00 / 08';
+    } else if (currentIndex === totalScreens - 1) {
+      progressText.textContent = 'AI / 08';
+    } else {
+      progressText.textContent = String(currentIndex).padStart(2, '0') + ' / 08';
+    }
+  }
+
+  dots.forEach(function(dot, i) {
+    dot.addEventListener('click', function() {
+      currentIndex = i;
+      container.scrollTo({ left: i * window.innerWidth, behavior: 'smooth' });
+      updateProgress();
+    });
+  });
+
+  // 桌面端方向键 + Escape
+  document.addEventListener('keydown', function(e) {
+    var tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    if (e.key === 'ArrowRight' && currentIndex < totalScreens - 1) {
+      currentIndex++;
+      container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+      updateProgress();
+    } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+      currentIndex--;
+      container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+      updateProgress();
+    } else if (e.key === 'Escape') {
+      if (document.getElementById('lightbox').classList.contains('show')) { closeLightbox(); }
+      else if (aiChatBox.classList.contains('show')) { closeChat(); }
+    }
+  });
+
+  function goToAIScreen() {
+    if (aiChatBox.classList.contains('show')) closeChat();
+    currentIndex = totalScreens - 1;
+    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
+    updateProgress();
+  }
+  window.goToAIScreen = goToAIScreen;
+
+  /* ==================== History 状态机（防大退） ==================== */
+  history.replaceState({ view: 'bug-base' }, '', location.href);
+
+  window.addEventListener('popstate', function(e) {
+    if (currentIndex > 0) {
+      currentIndex = 0;
+      container.scrollTo({ left: 0, behavior: 'smooth' });
+      updateProgress();
+      history.pushState({ view: 'bug-base' }, '', location.href);
       return;
     }
-    
+    window.location.href = 'index3.html#library-section';
+  });
+
+  /* ==================== Lightbox ==================== */
+  let lbScale = 1, lbX = 0, lbY = 0;
+  let lbDragging = false, lbStartX = 0, lbStartY = 0;
+
+  function openLightbox(src) {
+    const lb = document.getElementById('lightbox');
+    const img = document.getElementById('lightboxImg');
+    img.src = src;
+    lbScale = 1; lbX = 0; lbY = 0;
+    updateLightbox();
+    lb.classList.add('show');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('show');
+  }
+  function updateLightbox() {
+    document.getElementById('lightboxImg').style.transform =
+      'translate(' + lbX + 'px, ' + lbY + 'px) scale(' + lbScale + ')';
+  }
+
+  document.getElementById('lightbox').addEventListener('wheel', function(e) {
     e.preventDefault();
-    if (isAnimating) return;
-    const direction = e.deltaY > 0 ? 1 : -1;
-    const nextIndex = currentIndex + direction;
-    if (nextIndex < 0 || nextIndex >= totalScreens) return;
-    isAnimating = true;
-    currentIndex = nextIndex;
-    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
-    updateProgress();
-    setTimeout(() => { isAnimating = false; }, 700);
+    lbScale = Math.max(0.3, Math.min(5, lbScale + (e.deltaY > 0 ? -0.15 : 0.15)));
+    updateLightbox();
   }, { passive: false });
 
-  // 桌面端拖拽
-  let isDragging = false;
-  let dragStartX = 0;
-  let dragStartScrollLeft = 0;
-
-  container.addEventListener('mousedown', (e) => {
-    if (e.target.closest('.ai-result-box')) return;
-    isDragging = true;
-    dragStartX = e.pageX;
-    dragStartScrollLeft = container.scrollLeft;
-    container.style.scrollSnapType = 'none';
+  const lbImg = document.getElementById('lightboxImg');
+  lbImg.addEventListener('mousedown', function(e) {
+    e.preventDefault();
+    lbDragging = true;
+    lbStartX = e.clientX - lbX;
+    lbStartY = e.clientY - lbY;
+  });
+  document.addEventListener('mousemove', function(e) {
+    if (!lbDragging) return;
+    lbX = e.clientX - lbStartX;
+    lbY = e.clientY - lbStartY;
+    updateLightbox();
+  });
+  document.addEventListener('mouseup', function() { lbDragging = false; });
+  lbImg.addEventListener('dblclick', function() {
+    lbScale = 1; lbX = 0; lbY = 0;
+    updateLightbox();
+  });
+  document.getElementById('lightbox').addEventListener('click', function(e) {
+    if (e.target.id === 'lightbox') closeLightbox();
   });
 
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    const deltaX = e.pageX - dragStartX;
-    container.scrollLeft = dragStartScrollLeft - deltaX;
-  });
+  window.openLightbox = openLightbox;
+  window.closeLightbox = closeLightbox;
 
-  document.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    container.style.scrollSnapType = 'x mandatory';
-    const idx = Math.round(container.scrollLeft / window.innerWidth);
-    currentIndex = Math.max(0, Math.min(totalScreens - 1, idx));
-    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
-    updateProgress();
-  });
-}
-
-// 手机端通过 scroll 事件自动更新索引（靠 scroll-snap 的吸附）
-container.addEventListener('scroll', () => {
-  const idx = Math.round(container.scrollLeft / window.innerWidth);
-  if (idx !== currentIndex) {
-    currentIndex = idx;
-    updateProgress();
-  }
-}, { passive: true });
-
-function updateProgress() {
-  dots.forEach((d, i) => d.classList.toggle('active', i === currentIndex));
-  const p = currentIndex / (totalScreens - 1);
-  progressFill.style.width = (p * 100) + '%';
-
-  if (currentIndex === 0) {
-    progressText.textContent = '00 / 08';
-  } else {
-    progressText.textContent = `${String(currentIndex).padStart(2, '0')} / 08`;
-  }
-}
-
-dots.forEach((dot, i) => {
-  dot.addEventListener('click', () => {
-    currentIndex = i;
-    container.scrollTo({ left: i * window.innerWidth, behavior: 'smooth' });
-    updateProgress();
-  });
-});
-
-// 桌面端左右方向键
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' && currentIndex < totalScreens - 1) {
-    currentIndex++;
-    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
-    updateProgress();
-  } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
-    currentIndex--;
-    container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
-    updateProgress();
-  } else if (e.key === 'Escape') {
-    closeLightbox();
-  }
-});
-
-function goToAIScreen() {
-  currentIndex = totalScreens - 1;
-  container.scrollTo({ left: currentIndex * window.innerWidth, behavior: 'smooth' });
   updateProgress();
-}
 
-// ==================== Lightbox ====================
-let lbScale = 1, lbX = 0, lbY = 0;
-let lbDragging = false, lbStartX = 0, lbStartY = 0;
+  /* ==================== 音乐 ==================== */
+  const bgm = document.getElementById('bgm');
+  const soundBtn = document.getElementById('sound-toggle');
+  const soundIcon = document.getElementById('sound-icon');
+  let musicOn = localStorage.getItem('mangroveMusicOn') !== 'false';
 
-function openLightbox(src) {
-  const lb = document.getElementById('lightbox');
-  const img = document.getElementById('lightboxImg');
-  img.src = src;
-  lbScale = 1; lbX = 0; lbY = 0;
-  updateLightbox();
-  lb.classList.add('show');
-}
-function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
-function updateLightbox() {
-  document.getElementById('lightboxImg').style.transform = `translate(${lbX}px, ${lbY}px) scale(${lbScale})`;
-}
-
-document.getElementById('lightbox').addEventListener('wheel', (e) => {
-  e.preventDefault();
-  lbScale = Math.max(0.3, Math.min(5, lbScale + (e.deltaY > 0 ? -0.15 : 0.15)));
-  updateLightbox();
-}, { passive: false });
-
-const lbImg = document.getElementById('lightboxImg');
-lbImg.addEventListener('mousedown', (e) => {
-  e.preventDefault();
-  lbDragging = true;
-  lbStartX = e.clientX - lbX;
-  lbStartY = e.clientY - lbY;
-});
-document.addEventListener('mousemove', (e) => {
-  if (!lbDragging) return;
-  lbX = e.clientX - lbStartX;
-  lbY = e.clientY - lbStartY;
-  updateLightbox();
-});
-document.addEventListener('mouseup', () => { lbDragging = false; });
-lbImg.addEventListener('dblclick', () => {
-  lbScale = 1; lbX = 0; lbY = 0;
-  updateLightbox();
-});
-
-updateProgress();
-
-// ==================== 音乐逻辑 ====================
-const bgm = document.getElementById('bgm');
-const soundBtn = document.getElementById('sound-toggle');
-let musicOn = localStorage.getItem('mangroveMusicOn') !== 'false';
-
-function updateSoundBtn() {
-    soundBtn.innerText = bgm.paused ? '🔇' : '🔊';
-}
-
-function tryPlayMusic() {
-    if (musicOn && bgm.paused) {
-        bgm.play().catch(() => {});
+  function updateSoundIcon() {
+    if (bgm.paused) {
+      soundIcon.innerHTML = ICONS.soundOff;
+      soundBtn.setAttribute('aria-label', '开启音乐');
+    } else {
+      soundIcon.innerHTML = ICONS.soundOn;
+      soundBtn.setAttribute('aria-label', '关闭音乐');
     }
-}
+  }
 
-function toggleSound(event) {
+  function tryPlayMusic() {
+    if (musicOn && bgm.paused) {
+      bgm.play().catch(function(){});
+    }
+  }
+
+  function toggleSound(event) {
     if (event) event.stopPropagation();
     if (bgm.paused) {
-        bgm.play().then(() => {
-            musicOn = true;
-            localStorage.setItem('mangroveMusicOn', 'true');
-            updateSoundBtn();
-        }).catch(()=>{});
+      bgm.play().then(function() {
+        musicOn = true;
+        localStorage.setItem('mangroveMusicOn', 'true');
+        updateSoundIcon();
+      }).catch(function(){});
     } else {
-        bgm.pause();
-        musicOn = false;
-        localStorage.setItem('mangroveMusicOn', 'false');
-        updateSoundBtn();
+      bgm.pause();
+      musicOn = false;
+      localStorage.setItem('mangroveMusicOn', 'false');
+      updateSoundIcon();
     }
-}
+  }
+  window.toggleSound = toggleSound;
 
-bgm.addEventListener('play', updateSoundBtn);
-bgm.addEventListener('pause', updateSoundBtn);
-window.addEventListener('load', tryPlayMusic);
+  bgm.addEventListener('play', updateSoundIcon);
+  bgm.addEventListener('pause', updateSoundIcon);
+  window.addEventListener('load', tryPlayMusic);
 
-// 首次任意交互时自动播放音乐
-function firstInteractionHandler() {
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      if (!bgm.paused) bgm.pause();
+    }
+  });
+
+  function firstInteractionHandler() {
     tryPlayMusic();
     document.removeEventListener('click', firstInteractionHandler);
     document.removeEventListener('touchstart', firstInteractionHandler);
     document.removeEventListener('keydown', firstInteractionHandler);
-}
-document.addEventListener('click', firstInteractionHandler, { passive: true });
-document.addEventListener('touchstart', firstInteractionHandler, { passive: true });
-document.addEventListener('keydown', firstInteractionHandler, { passive: true });
+  }
+  document.addEventListener('click', firstInteractionHandler, { passive: true });
+  document.addEventListener('touchstart', firstInteractionHandler, { passive: true });
+  document.addEventListener('keydown', firstInteractionHandler, { passive: true });
 
-updateSoundBtn();
+  updateSoundIcon();
 
-// ==================== AI 助手逻辑 ====================
-const aiFloatBtn = document.getElementById('ai-float-btn');
-const aiChatBox = document.getElementById('ai-chat-box');
-const aiCloseBtn = document.getElementById('ai-close-btn');
-const aiClearBtn = document.getElementById('ai-clear-btn');
-const aiInput = document.getElementById('ai-input');
-const aiSendBtn = document.getElementById('ai-send-btn');
-const aiMessages = document.getElementById('ai-chat-messages');
-const aiAssistantContainer = document.getElementById('ai-assistant-container');
+  /* ==================== AI 助手 ==================== */
+  const aiFloatBtn = document.getElementById('ai-float-btn');
+  const aiChatBox = document.getElementById('ai-chat-box');
+  const aiCloseBtn = document.getElementById('ai-close-btn');
+  const aiClearBtn = document.getElementById('ai-clear-btn');
+  const aiInput = document.getElementById('ai-input');
+  const aiSendBtn = document.getElementById('ai-send-btn');
+  const aiMessages = document.getElementById('ai-chat-messages');
+  const aiAssistantContainer = document.getElementById('ai-assistant-container');
 
-const P1 = "66de7713c55546bab9822a2d92a9957b";
-const P2 = ".2elQ1xVUQSwCapqb";
-const API_KEY = P1 + P2;
+  const API_KEY = "66de7713c55546bab9822a2d92a9957b" + ".2elQ1xVUQSwCapqb";
+  const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+  const MODEL = "glm-5.3-flash";
 
-const API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
-const MODEL = "glm-5.3-flash"; // ✅ 统一升级到更聪明的模型
+  let isAILoading = false;
 
-let isAILoading = false;
-
-let chatHistory = [
+  let chatHistory = [
     { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你只回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。" }
-];
+  ];
 
-const pupils = document.querySelectorAll('.pupil');
+  const pupils = document.querySelectorAll('.pupil');
+  if (!isTouchDevice && !prefersReducedMotion) {
+    document.addEventListener('mousemove', function(e) {
+      const rect = aiFloatBtn.getBoundingClientRect();
+      const px = rect.left + rect.width / 2;
+      const py = rect.top + rect.height / 2;
+      const dx = e.clientX - px;
+      const dy = e.clientY - py;
+      const angle = Math.atan2(dy, dx);
+      const dist = Math.min(Math.hypot(dx, dy), 3);
+      const x = Math.cos(angle) * dist;
+      const y = Math.sin(angle) * dist;
+      pupils.forEach(function(p) {
+        p.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+      });
+    }, { passive: true });
+  }
 
-if (!isTouchDevice) {
-  document.addEventListener('mousemove', (e) => {
-    const rect = aiFloatBtn.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    
-    const dx = e.clientX - cx;
-    const dy = e.clientY - cy;
-    const angle = Math.atan2(dy, dx);
-    const dist = Math.min(Math.hypot(dx, dy), 3); 
-    
-    const x = Math.cos(angle) * dist;
-    const y = Math.sin(angle) * dist;
-    
-    pupils.forEach(p => {
-        p.style.transform = `translate(${x}px, ${y}px)`;
-    });
-  });
-}
-
-function openChat() {
+  function openChat() {
     aiChatBox.classList.add('show');
     document.getElementById('jump-ai-btn').classList.add('show');
-    if (!isTouchDevice) aiInput.focus();
     if (!isTouchDevice) {
-        document.body.style.cursor = 'auto';
-        cursorCore.style.display = 'none';
+      aiInput.focus();
+      document.body.classList.remove('custom-cursor-on');
+      cursorCore.style.display = 'none';
     }
-}
+  }
 
-function closeChat() {
+  function closeChat() {
     aiChatBox.classList.remove('show');
     document.getElementById('jump-ai-btn').classList.remove('show');
-    if (!isTouchDevice) {
-        document.body.style.cursor = 'none';
-        cursorCore.style.display = 'block';
+    if (!isTouchDevice && customCursorOn) {
+      document.body.classList.add('custom-cursor-on');
+      cursorCore.style.display = 'block';
     }
-}
+  }
 
-let isSpriteDragging = false; 
-let spriteStartX = 0, spriteStartY = 0;
-let initialLeft = 0, initialTop = 0;
+  let isSpriteDragging = false;
+  let spriteStartX = 0, spriteStartY = 0;
+  let initialLeft = 0, initialTop = 0;
 
-function dragStart(e) {
+  function dragStart(e) {
     if (e.type === 'mousedown' && e.button !== 0) return;
     if (e.type === 'touchstart' && e.touches.length > 1) return;
 
@@ -1573,88 +1963,131 @@ function dragStart(e) {
     document.addEventListener('mouseup', dragEnd);
     document.addEventListener('touchmove', dragMove, { passive: false });
     document.addEventListener('touchend', dragEnd);
-}
+  }
 
-function dragMove(e) {
+  function dragMove(e) {
     const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-    
     const dx = clientX - spriteStartX;
     const dy = clientY - spriteStartY;
-    
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        isSpriteDragging = true;
-        if (e.cancelable) e.preventDefault(); 
+      isSpriteDragging = true;
+      if (e.cancelable) e.preventDefault();
     }
-
     if (isSpriteDragging) {
-        aiAssistantContainer.style.left = (initialLeft + dx) + 'px';
-        aiAssistantContainer.style.top = (initialTop + dy) + 'px';
+      aiAssistantContainer.style.left = (initialLeft + dx) + 'px';
+      aiAssistantContainer.style.top = (initialTop + dy) + 'px';
     }
-}
+  }
 
-function dragEnd() {
+  function dragEnd() {
     document.removeEventListener('mousemove', dragMove);
     document.removeEventListener('mouseup', dragEnd);
     document.removeEventListener('touchmove', dragMove);
     document.removeEventListener('touchend', dragEnd);
-}
+  }
 
-aiFloatBtn.addEventListener('mousedown', dragStart);
-aiFloatBtn.addEventListener('touchstart', dragStart, { passive: false });
+  aiFloatBtn.addEventListener('mousedown', dragStart);
+  aiFloatBtn.addEventListener('touchstart', dragStart, { passive: false });
 
-aiFloatBtn.addEventListener('click', (e) => {
-    if (isSpriteDragging) {
-        isSpriteDragging = false; 
-        return; 
-    }
-    
+  aiFloatBtn.addEventListener('click', function() {
+    if (isSpriteDragging) { isSpriteDragging = false; return; }
     aiFloatBtn.classList.remove('breathe');
-    void aiFloatBtn.offsetWidth; 
+    void aiFloatBtn.offsetWidth;
     aiFloatBtn.classList.add('breathe');
-    
-    setTimeout(() => {
-        if (aiChatBox.classList.contains('show')) {
-            closeChat();
-        } else {
-            openChat();
-        }
+    setTimeout(function() {
+      if (aiChatBox.classList.contains('show')) closeChat();
+      else openChat();
     }, 250);
-});
+  });
 
-aiCloseBtn.addEventListener('click', closeChat);
+  aiCloseBtn.addEventListener('click', closeChat);
 
-aiClearBtn.addEventListener('click', () => {
-    if (confirm('确定要清空所有的聊天记录吗？')) {
-        localStorage.removeItem('mangroveChatHistory');
-        chatHistory = [
-            { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你只回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。" }
-        ];
-        aiMessages.innerHTML = '<div class="ai-message ai-message-bot">你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。</div>';
-        saveChatHistory();
-    }
-});
+  aiClearBtn.addEventListener('click', async function() {
+    const ok = await showToast('确定要清空所有的聊天记录吗？', { confirm: true, confirmText: '清空', cancelText: '取消' });
+    if (!ok) return;
+    localStorage.removeItem('mangroveChatHistory');
+    chatHistory = [
+      { role: "system", content: "你是一个红树林生态科普专家，名字叫'小树'。你只回答关于湛江红树林生态、动植物、海洋环保相关的问题。用通俗易懂、生动有趣的语言回答，回答最后请顺便呼吁大家保护环境。" }
+    ];
+    aiMessages.innerHTML = '<div class="ai-message ai-message-bot">你好！我是这片红树林的AI导游，关于植物、鸟类、鱼类、虫子或者环保的问题，你都可以问我哦。</div>';
+    saveChatHistory();
+  });
 
-function saveChatHistory() {
-    const clone = aiMessages.cloneNode(true);
-    const loadingElements = clone.querySelectorAll('.ai-message-loading');
-    loadingElements.forEach(el => el.remove());
-    localStorage.setItem('mangroveChatHistory', clone.innerHTML);
-}
+  /* ===== 聊天记录：跨页兼容 + XSS 防护 ===== */
+  function saveChatHistory() {
+    try {
+      const msgs = aiMessages.querySelectorAll('.ai-message');
+      const arr = [];
+      msgs.forEach(function(m) {
+        if (m.classList.contains('ai-message-loading')) return;
+        const role = m.classList.contains('ai-message-user') ? 'user' : 'bot';
+        const text = (m.textContent || '').trim();
+        if (!text) return;
+        arr.push({ role: role, text: text });
+      });
+      if (arr.length > 60) arr = arr.slice(-60);
+      localStorage.setItem('mangroveChatHistory', JSON.stringify(arr));
+    } catch (e) {}
+  }
 
-function loadChatHistory() {
+  function renderChatMessages(arr) {
+    aiMessages.innerHTML = '';
+    arr.forEach(function(m) {
+      if (!m || typeof m.text !== 'string') return;
+      const text = m.text.trim();
+      if (!text) return;
+      const msg = document.createElement('div');
+      msg.className = 'ai-message ai-message-' + (m.role === 'user' ? 'user' : 'bot');
+      msg.textContent = text;
+      aiMessages.appendChild(msg);
+    });
+    aiMessages.scrollTop = aiMessages.scrollHeight;
+  }
+
+  function loadChatHistory() {
     const saved = localStorage.getItem('mangroveChatHistory');
-    if (saved) {
-        aiMessages.innerHTML = saved;
-        const loadingElements = aiMessages.querySelectorAll('.ai-message-loading');
-        loadingElements.forEach(el => el.remove());
-        aiMessages.scrollTop = aiMessages.scrollHeight;
+    if (!saved) return;
+
+    // 新版 JSON
+    if (saved.charAt(0) === '[') {
+      try {
+        const arr = JSON.parse(saved);
+        if (Array.isArray(arr) && arr.length > 0) {
+          renderChatMessages(arr);
+          return;
+        }
+      } catch (e) {}
     }
-}
 
-loadChatHistory();
+    // 旧版 HTML：用 DOMParser 隔离解析，防 XSS
+    if (saved.indexOf('ai-message') >= 0 || saved.charAt(0) === '<') {
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(saved, 'text/html');
+        const msgs = doc.querySelectorAll('.ai-message');
+        const arr = [];
+        msgs.forEach(function(m) {
+          if (m.classList.contains('ai-message-loading')) return;
+          const role = m.classList.contains('ai-message-user') ? 'user' : 'bot';
+          const text = (m.textContent || '').trim();
+          if (!text) return;
+          arr.push({ role: role, text: text });
+        });
+        if (arr.length > 0) {
+          renderChatMessages(arr);
+          saveChatHistory();
+          return;
+        }
+      } catch (e) {}
+    }
 
-async function sendAIMessage() {
+    try { localStorage.removeItem('mangroveChatHistory'); } catch (e) {}
+  }
+
+  loadChatHistory();
+
+  async function sendAIMessage() {
     const text = aiInput.value.trim();
     if (!text || isAILoading) return;
 
@@ -1664,7 +2097,7 @@ async function sendAIMessage() {
 
     chatHistory.push({ role: "user", content: text });
     if (chatHistory.length > 11) {
-        chatHistory = [chatHistory[0], ...chatHistory.slice(-10)];
+      chatHistory = [chatHistory[0]].concat(chatHistory.slice(-10));
     }
 
     const loadingDiv = document.createElement('div');
@@ -1674,133 +2107,132 @@ async function sendAIMessage() {
     aiMessages.scrollTop = aiMessages.scrollHeight;
 
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: MODEL,
-                messages: chatHistory
-            })
-        });
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + API_KEY
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: chatHistory
+        })
+      });
 
-        const data = await response.json();
-        
-        aiMessages.removeChild(loadingDiv);
+      const data = await response.json();
+      aiMessages.removeChild(loadingDiv);
 
-        if (data.choices && data.choices[0]) {
-            const reply = data.choices[0].message.content;
-            appendMessage('bot', reply);
-            chatHistory.push({ role: "assistant", content: reply });
-        } else {
-            appendMessage('bot', '哎呀，我好像潜入深海迷路了，请稍后再试。');
-        }
-
+      if (data.choices && data.choices[0]) {
+        const reply = data.choices[0].message.content;
+        appendMessage('bot', reply);
+        chatHistory.push({ role: "assistant", content: reply });
+      } else {
+        appendMessage('bot', '哎呀，我好像潜入深海迷路了，请稍后再试。');
+      }
     } catch (error) {
-        console.error("AI 请求失败:", error);
-        if (aiMessages.contains(loadingDiv)) {
-            aiMessages.removeChild(loadingDiv);
-        }
-        appendMessage('bot', '网络连接失败，请检查一下网络或API配置。');
+      console.error("AI 请求失败:", error);
+      if (aiMessages.contains(loadingDiv)) aiMessages.removeChild(loadingDiv);
+      appendMessage('bot', '网络连接失败，请检查一下网络或API配置。');
     } finally {
-        isAILoading = false;
-        saveChatHistory();
+      isAILoading = false;
+      saveChatHistory();
     }
-}
+  }
 
-function appendMessage(role, text) {
+  function appendMessage(role, text) {
     const msg = document.createElement('div');
-    msg.className = `ai-message ai-message-${role}`;
+    msg.className = 'ai-message ai-message-' + role;
     msg.textContent = text;
     aiMessages.appendChild(msg);
     aiMessages.scrollTop = aiMessages.scrollHeight;
     saveChatHistory();
-}
+  }
 
-aiSendBtn.addEventListener('click', sendAIMessage);
-aiInput.addEventListener('keypress', (e) => {
+  aiSendBtn.addEventListener('click', sendAIMessage);
+  aiInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') sendAIMessage();
-});
+  });
 
-// ==================== 图像识别逻辑 ====================
-const fileInput = document.getElementById('file-input');
-const uploadArea = document.getElementById('upload-area');
-const loadingSpinner = document.getElementById('loading-spinner');
-const loadingText = document.getElementById('loading-text');
-const loadingTip = document.getElementById('loading-tip');
-const cancelBtn = document.getElementById('cancel-btn');
-const resultBox = document.getElementById('ai-result-box');
-const resultInner = document.getElementById('result-inner');
+  /* ==================== 图像识别 ==================== */
+  const fileInput = document.getElementById('file-input');
+  const uploadArea = document.getElementById('upload-area');
+  const loadingSpinner = document.getElementById('loading-spinner');
+  const loadingText = document.getElementById('loading-text');
+  const loadingTip = document.getElementById('loading-tip');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const resultBox = document.getElementById('ai-result-box');
+  const resultInner = document.getElementById('result-inner');
 
-let currentAbortController = null;
-let currentTimeout = null;
+  let currentAbortController = null;
+  let currentTimeout = null;
 
-resultBox.addEventListener('wheel', (e) => {
+  resultBox.addEventListener('wheel', function(e) {
     e.stopPropagation();
-}, { passive: false });
+  }, { passive: false });
 
-uploadArea.addEventListener('click', () => {
-    fileInput.click();
-});
+  uploadArea.addEventListener('click', function() { fileInput.click(); });
+  uploadArea.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
 
-uploadArea.addEventListener('dragover', (e) => {
+  uploadArea.addEventListener('dragover', function(e) {
     e.preventDefault();
     uploadArea.style.borderColor = '#ffd966';
     uploadArea.style.background = 'rgba(255,217,102,0.15)';
-});
-uploadArea.addEventListener('dragleave', () => {
+  });
+  uploadArea.addEventListener('dragleave', function() {
     uploadArea.style.borderColor = 'rgba(255,217,102,0.5)';
     uploadArea.style.background = 'rgba(255,217,102,0.05)';
-});
-uploadArea.addEventListener('drop', (e) => {
+  });
+  uploadArea.addEventListener('drop', function(e) {
     e.preventDefault();
     uploadArea.style.borderColor = 'rgba(255,217,102,0.5)';
     uploadArea.style.background = 'rgba(255,217,102,0.05)';
     const file = e.dataTransfer.files[0];
     if (file) handleImageFile(file);
-});
+  });
 
-fileInput.addEventListener('change', (e) => {
+  fileInput.addEventListener('change', function(e) {
     const file = e.target.files[0];
-    if (file) {
-        handleImageFile(file);
-    }
+    if (file) handleImageFile(file);
     e.target.value = '';
-});
+  });
 
-function cancelRecognition() {
+  function cancelRecognition() {
     if (currentAbortController) {
-        currentAbortController.abort();
-        currentAbortController = null;
+      currentAbortController.abort();
+      currentAbortController = null;
     }
     if (currentTimeout) {
-        clearTimeout(currentTimeout);
-        currentTimeout = null;
+      clearTimeout(currentTimeout);
+      currentTimeout = null;
     }
     hideLoading();
     uploadArea.style.display = 'flex';
-}
+  }
+  window.cancelRecognition = cancelRecognition;
 
-function hideLoading() {
+  function hideLoading() {
     loadingSpinner.style.display = 'none';
     loadingText.classList.remove('show');
     loadingTip.classList.remove('show');
     cancelBtn.classList.remove('show');
-}
+  }
 
-function showLoading() {
+  function showLoading() {
     loadingSpinner.style.display = 'block';
     loadingText.classList.add('show');
     loadingTip.classList.add('show');
     cancelBtn.classList.add('show');
-}
+  }
 
-function handleImageFile(file) {
+  function handleImageFile(file) {
     if (file.size > 5 * 1024 * 1024) {
-        alert("图片太大了，请选择小于 5MB 的图片。");
-        return;
+      showToast('图片太大了，请选择小于 5MB 的图片。', { type: 'warning' });
+      return;
     }
 
     uploadArea.style.display = 'none';
@@ -1808,142 +2240,113 @@ function handleImageFile(file) {
     showLoading();
 
     const reader = new FileReader();
-    reader.onload = async (event) => {
-        const base64Data = event.target.result;
-        
-        try {
-            const compressedBase64 = await compressImage(base64Data, 1024, 0.8);
-            await callVisionAPI(compressedBase64);
-        } catch (error) {
-            console.error("图片压缩或识别失败:", error);
-            hideLoading();
-            showResult("抱歉，图片处理失败了，请换一张图试试。", true);
-        }
+    reader.onload = async function(event) {
+      const base64Data = event.target.result;
+      try {
+        const compressedBase64 = await compressImage(base64Data, 1024, 0.8);
+        await callVisionAPI(compressedBase64);
+      } catch (error) {
+        console.error("图片压缩或识别失败:", error);
+        hideLoading();
+        showResult("抱歉，图片处理失败了，请换一张图试试。", true);
+      }
     };
     reader.readAsDataURL(file);
-}
+  }
 
-function compressImage(base64Str, maxWidth, quality) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.src = base64Str;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-
-            if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-
-            resolve(canvas.toDataURL('image/jpeg', quality));
-        };
+  function compressImage(base64Str, maxWidth, quality) {
+    return new Promise(function(resolve) {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
     });
-}
+  }
 
-async function callVisionAPI(base64Data) {
-    const systemPrompt = `你是红树林昆虫识别专家，专门识别中国南方特别是湛江红树林生态系统中的昆虫、蝴蝶、蜻蜓、蜘蛛等节肢动物。
-
-请仔细观察图片中生物的以下特征：
-- 翅膀的颜色、斑纹、形状
-- 身体颜色与形态
-- 触角、足等细节
-- 整体大小与姿态
-
-然后**严格按照以下格式回答**（每项一行，不要省略任何一项）：
-
-【名称】此生物最可能的中文名（必须给出具体名称，如"蓝点紫斑蝶"或"虎斑蝶"，不要用"黑蝴蝶"这种笼统称呼）
-【学名】拉丁学名（斜体不用标注，直接写）
-【特征】外形特征描述（50字左右）
-【习性】生活习性与食性（50字左右）
-【冷知识】一条有趣的科普知识（50字左右）
-
-如果确实无法精确到种，请给出最可能的科或属，并在【名称】中标注"（疑似）"。`;
+  async function callVisionAPI(base64Data) {
+    const systemPrompt = '你是红树林昆虫识别专家，专门识别中国南方特别是湛江红树林生态系统中的昆虫、蝴蝶、蜻蜓、蜘蛛等节肢动物。\n\n请仔细观察图片中生物的以下特征：\n- 翅膀的颜色、斑纹、形状\n- 身体颜色与形态\n- 触角、足等细节\n- 整体大小与姿态\n\n然后**严格按照以下格式回答**（每项一行，不要省略任何一项）：\n\n【名称】此生物最可能的中文名（必须给出具体名称，如"蓝点紫斑蝶"或"虎斑蝶"，不要用"黑蝴蝶"这种笼统称呼）\n【学名】拉丁学名\n【特征】外形特征描述（50字左右）\n【习性】生活习性与食性（50字左右）\n【冷知识】一条有趣的科普知识（50字左右）\n\n如果确实无法精确到种，请给出最可能的科或属，并在【名称】中标注"（疑似）"。';
 
     currentAbortController = new AbortController();
 
-    currentTimeout = setTimeout(() => {
-        if (currentAbortController) {
-            currentAbortController.abort();
-            currentAbortController = null;
-        }
-        hideLoading();
-        uploadArea.style.display = 'flex';
-        showResult("识别超时了，可能是因为网络较慢。请换一张图片或稍后重试。", true);
+    currentTimeout = setTimeout(function() {
+      if (currentAbortController) {
+        currentAbortController.abort();
+        currentAbortController = null;
+      }
+      hideLoading();
+      uploadArea.style.display = 'flex';
+      showResult("识别超时了，可能是因为网络较慢。请换一张图片或稍后重试。", true);
     }, 60000);
 
     try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_KEY}`
-            },
-            body: JSON.stringify({
-                model: "glm-5.3-flash",
-                messages: [
-                    {
-                        role: "user",
-                        content: [
-                            { type: "text", text: systemPrompt },
-                            { type: "image_url", image_url: { url: base64Data } }
-                        ]
-                    }
-                ]
-            }),
-            signal: currentAbortController.signal
-        });
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + API_KEY
+        },
+        body: JSON.stringify({
+          model: "glm-4v-plus",
+          reasoning_effort: "low",
+          max_tokens: 500,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: systemPrompt },
+                { type: "image_url", image_url: { url: base64Data } }
+              ]
+            }
+          ]
+        }),
+        signal: currentAbortController.signal
+      });
 
-        if (currentTimeout) {
-            clearTimeout(currentTimeout);
-            currentTimeout = null;
-        }
-        currentAbortController = null;
+      if (currentTimeout) { clearTimeout(currentTimeout); currentTimeout = null; }
+      currentAbortController = null;
 
-        const data = await response.json();
-        
-        hideLoading();
+      const data = await response.json();
+      hideLoading();
 
-        if (data.choices && data.choices[0]) {
-            renderResult(data.choices[0].message.content);
-        } else {
-            showResult("识别失败，请重试。", true);
-        }
-
+      if (data.choices && data.choices[0]) {
+        renderResult(data.choices[0].message.content);
+      } else {
+        showResult("识别失败，请重试。", true);
+      }
     } catch (error) {
-        if (currentTimeout) {
-            clearTimeout(currentTimeout);
-            currentTimeout = null;
-        }
-        currentAbortController = null;
+      if (currentTimeout) { clearTimeout(currentTimeout); currentTimeout = null; }
+      currentAbortController = null;
 
-        if (error.name === 'AbortError') {
-            console.log('用户取消了识别');
-            return;
-        }
+      if (error.name === 'AbortError') return;
 
-        console.error("视觉 API 请求失败:", error);
-        hideLoading();
-        uploadArea.style.display = 'flex';
-        showResult("网络连接失败，请检查网络或 API 配置。", true);
+      console.error("视觉 API 请求失败:", error);
+      hideLoading();
+      uploadArea.style.display = 'flex';
+      showResult("网络连接失败，请检查网络或 API 配置。", true);
     }
-}
+  }
 
-function renderResult(text) {
+  /* ===== 结果渲染：用 textContent 防 XSS ===== */
+  function renderResult(text) {
     uploadArea.style.display = 'flex';
     resultBox.classList.add('show');
 
-    const getField = (label) => {
-        const regex = new RegExp('【' + label + '】([\\s\\S]*?)(?=【|$)', 'i');
-        const match = text.match(regex);
-        return match ? match[1].trim() : '';
+    const getField = function(label) {
+      const regex = new RegExp('【' + label + '】([\\s\\S]*?)(?=【|$)', 'i');
+      const match = text.match(regex);
+      return match ? match[1].trim() : '';
     };
 
     const name = getField('名称');
@@ -1952,24 +2355,174 @@ function renderResult(text) {
     const habit = getField('习性');
     const fact = getField('冷知识');
 
+    resultInner.innerHTML = '';
     if (name) {
-        let html = '';
-        html += `<div class="result-name">${name}</div>`;
-        if (latin) html += `<div class="result-latin">${latin}</div>`;
-        if (feature) html += `<div class="result-item"><div class="result-item-title">◆ 特征描述</div><div class="result-item-content">${feature}</div></div>`;
-        if (habit) html += `<div class="result-item"><div class="result-item-title">◆ 生活习性</div><div class="result-item-content">${habit}</div></div>`;
-        if (fact) html += `<div class="result-item"><div class="result-item-title">◆ 冷知识</div><div class="result-item-content">${fact}</div></div>`;
-        resultInner.innerHTML = html;
-    } else {
-        resultInner.innerHTML = `<div class="result-raw">${text.replace(/\n/g, '<br>')}</div>`;
-    }
-}
+      const nameEl = document.createElement('div');
+      nameEl.className = 'result-name';
+      nameEl.textContent = name;
+      resultInner.appendChild(nameEl);
 
-function showResult(text, isError = false) {
+      if (latin) {
+        const latinEl = document.createElement('div');
+        latinEl.className = 'result-latin';
+        latinEl.textContent = latin;
+        resultInner.appendChild(latinEl);
+      }
+
+      const items = [
+        { title: '◆ 特征描述', content: feature },
+        { title: '◆ 生活习性', content: habit },
+        { title: '◆ 冷知识', content: fact }
+      ];
+      items.forEach(function(it) {
+        if (!it.content) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'result-item';
+        const title = document.createElement('div');
+        title.className = 'result-item-title';
+        title.textContent = it.title;
+        const content = document.createElement('div');
+        content.className = 'result-item-content';
+        content.textContent = it.content;
+        wrap.appendChild(title);
+        wrap.appendChild(content);
+        resultInner.appendChild(wrap);
+      });
+    } else {
+      const raw = document.createElement('div');
+      raw.className = 'result-raw';
+      raw.textContent = text;
+      resultInner.appendChild(raw);
+    }
+  }
+
+  function showResult(text, isError) {
     uploadArea.style.display = 'flex';
     resultBox.classList.add('show');
-    resultInner.innerHTML = `<div class="result-raw" style="${isError ? 'color: #ff8a8a;' : ''}">${text.replace(/\n/g, '<br>')}</div>`;
-}
+    resultInner.innerHTML = '';
+    const raw = document.createElement('div');
+    raw.className = 'result-raw';
+    if (isError) raw.style.color = '#ff8a8a';
+    raw.textContent = text;
+    resultInner.appendChild(raw);
+  }
+
+  /* ==================== 环境粒子 + 图片跟随 ==================== */
+  const ambientCanvas = document.getElementById('ambient-canvas');
+  const ambientCtx = ambientCanvas.getContext('2d');
+  let canvasW = 0, canvasH = 0, canvasDpr = 1;
+
+  // 低性能设备减少粒子数量
+  const isLowPerf = (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4)
+                 || (navigator.deviceMemory && navigator.deviceMemory < 4);
+  const particles = [];
+  const PARTICLE_COUNT = isLowPerf ? 15 : 30;
+
+  function initParticles() {
+    particles.length = 0;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * canvasW,
+        y: Math.random() * canvasH,
+        vx: (Math.random() - 0.5) * 0.15,   // 极慢横向漂移
+        vy: -0.1 - Math.random() * 0.2,      // 缓慢向上漂浮
+        size: 1 + Math.random() * 2,         // 1-3px
+        alpha: 0.2 + Math.random() * 0.35,   // 0.2-0.55 透明度
+        phase: Math.random() * Math.PI * 2   // 用于横向摆动
+      });
+    }
+  }
+
+  function resizeAmbient() {
+    canvasDpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvasW = window.innerWidth;
+    canvasH = window.innerHeight;
+    ambientCanvas.width = Math.floor(canvasW * canvasDpr);
+    ambientCanvas.height = Math.floor(canvasH * canvasDpr);
+    ambientCanvas.style.width = canvasW + 'px';
+    ambientCanvas.style.height = canvasH + 'px';
+    ambientCtx.setTransform(1, 0, 0, 1, 0, 0);
+    ambientCtx.scale(canvasDpr, canvasDpr);
+    initParticles();
+  }
+
+  resizeAmbient();
+  let ambientResizeTimer = null;
+  window.addEventListener('resize', function() {
+    if (ambientResizeTimer) clearTimeout(ambientResizeTimer);
+    ambientResizeTimer = setTimeout(resizeAmbient, 150);
+  });
+
+  // 鼠标跟随目标（反方向偏移，最多 ±10px）
+  let targetTX = 0, targetTY = 0;
+  let curTX = 0, curTY = 0;
+
+  if (!isTouchDevice && !prefersReducedMotion) {
+    document.addEventListener('mousemove', function(e) {
+      const halfW = window.innerWidth / 2;
+      const halfH = window.innerHeight / 2;
+      targetTX = ((halfW - e.clientX) / halfW) * 10;
+      targetTY = ((halfH - e.clientY) / halfH) * 10;
+    }, { passive: true });
+  }
+
+  // 全局 rAF：跑鼠标跟随 + 粒子
+  (function ambientLoop() {
+    if (document.hidden) {
+      requestAnimationFrame(ambientLoop);
+      return;
+    }
+
+    // ---- 鼠标跟随（应用到当前可见的卡片图片） ----
+    if (!isTouchDevice && !prefersReducedMotion) {
+      curTX += (targetTX - curTX) * 0.08;
+      curTY += (targetTY - curTY) * 0.08;
+
+      const activeScreen = screens[currentIndex];
+      if (activeScreen && activeScreen.classList.contains('card-screen')) {
+        const img = activeScreen.querySelector('.main-img');
+        if (img) {
+          img.style.setProperty('--tx', curTX.toFixed(2) + 'px');
+          img.style.setProperty('--ty', curTY.toFixed(2) + 'px');
+        }
+      }
+    }
+
+    // ---- 粒子（仅在 7 个卡片页显示，intro 和 AI 屏不画） ----
+    if (!prefersReducedMotion && currentIndex > 0 && currentIndex < totalScreens - 1) {
+      ambientCtx.clearRect(0, 0, canvasW, canvasH);
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.phase += 0.008;
+
+        // 出屏重置
+        if (p.y < -10) {
+          p.y = canvasH + 10;
+          p.x = Math.random() * canvasW;
+        }
+        if (p.x < -10) p.x = canvasW + 10;
+        if (p.x > canvasW + 10) p.x = -10;
+
+        // 轻微横向摆动，像真正飘浮的浮尘
+        const wobbleX = Math.sin(p.phase) * 0.5;
+
+        ambientCtx.beginPath();
+        ambientCtx.arc(p.x + wobbleX, p.y, p.size, 0, Math.PI * 2);
+        ambientCtx.fillStyle = 'rgba(255, 217, 102, ' + p.alpha + ')';
+        ambientCtx.fill();
+      }
+    } else if (ambientCanvas.width > 0) {
+      // 非卡片页清空画布
+      ambientCtx.clearRect(0, 0, canvasW, canvasH);
+    }
+
+    requestAnimationFrame(ambientLoop);
+  })();
+
+})();
 </script>
 </body>
 </html>
